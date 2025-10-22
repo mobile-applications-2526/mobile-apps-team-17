@@ -9,7 +9,7 @@ export type Idea = {
   decided_by?: string;
   decided_at?: string;
   created_at: string;
-  updated_at: string;
+  due_date: string;
   published_at?: string;
   created_by: string;
   comment_count: number;
