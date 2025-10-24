@@ -1,5 +1,5 @@
 import '../global.css';
-import { Slot, usePathname, useRouter, useSegments } from 'expo-router';
+import { Stack, usePathname, useRouter, useSegments } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../supabase';
 import { ActivityIndicator, View } from 'react-native';
@@ -47,6 +47,16 @@ export default function RootLayout() {
   }
 
   return (
-    <Slot />
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="(auth)" />
+      <Stack.Screen name="(tabs)" />
+      <Stack.Screen 
+        name="create-idea" 
+        options={{
+          presentation: 'modal',
+          headerShown: false,
+        }}
+      />
+    </Stack>
   );
 }
