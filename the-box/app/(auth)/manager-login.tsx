@@ -1,4 +1,3 @@
-// app/(auth)/manager-login.tsx
 import React, { useState } from 'react';
 import { View, TextInput, Text, Pressable, Alert, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
