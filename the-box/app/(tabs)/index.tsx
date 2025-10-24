@@ -10,10 +10,10 @@ import { ThemedView } from '@/components/themed-view';
 import { Link } from 'expo-router';
 import React from 'react';
 
-type Company = { name: string };
+type Idea = { subject: string };
 
 export default function HomeScreen() {
-  const [companies, setCompanies] = useState<Company[] | null>(null);
+  const [ideas, setIdeas] = useState<Idea[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -21,13 +21,13 @@ export default function HomeScreen() {
     const load = async () => {
       setLoading(true);
       setErrorMsg(null);
-      const { data, error } = await supabase.from('companies').select('name');
+      const { data, error } = await supabase.from('ideas').select('subject');
 
       if (error) {
         setErrorMsg(error.message);
-        setCompanies(null);
+        setIdeas(null);
       } else {
-        setCompanies(data ?? []);
+        setIdeas(data ?? []);
       }
       setLoading(false);
     };
@@ -50,14 +50,14 @@ export default function HomeScreen() {
       </ThemedView>
 
       <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Companies</ThemedText>
+        <ThemedText type="subtitle">Ideas</ThemedText>
         {loading && <ThemedText>Loading…</ThemedText>}
         {errorMsg && <ThemedText>{`Error: ${errorMsg}`}</ThemedText>}
-        {companies?.map((c, idx) => (
-          <ThemedText key={`${c.name}-${idx}`}>• {c.name}</ThemedText>
+        {ideas?.map((c, idx) => (
+          <ThemedText key={`${c.subject}-${idx}`}>• {c.subject}</ThemedText>
         ))}
-        {!loading && !errorMsg && companies?.length === 0 && (
-          <ThemedText>(no companies yet)</ThemedText>
+        {!loading && !errorMsg && ideas?.length === 0 && (
+          <ThemedText>(no ideas yet)</ThemedText>
         )}
       </ThemedView>
 
