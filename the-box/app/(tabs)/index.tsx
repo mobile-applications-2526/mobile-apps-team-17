@@ -92,8 +92,10 @@ export default function HomeScreen() {
           <IdeaCard 
             idea={item}
             onComment={() => {
+              //todo: navigate to comments screen
               console.log('Comment on idea:', item.id);
             }}
+            //todo: implement follow functionality
             onFollow={() => {
               console.log('Follow idea:', item.id);
             }}

@@ -1,16 +1,11 @@
 import { Tabs, useRouter } from 'expo-router';
 import React from 'react';
-import { Pressable, Text } from 'react-native';
+import { Pressable } from 'react-native';
 import { supabase } from '@/supabase';
-import { HapticTab } from '@/components/haptic-tab';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { LogOut } from 'lucide-react-native';
+import { HapticTab } from '../../components/haptic-tab';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-
   const router = useRouter();
 
   const handleLogout = async () => {
@@ -23,35 +18,64 @@ export default function TabLayout() {
   };
 
   return (
-      <Tabs
-        screenOptions={{
-          headerShown: true,
-          headerRight: () => (
-            <Pressable onPress={handleLogout} style={{ marginRight: 15 }}>
-              <LogOut color="#007AFF" size={22} />
-            </Pressable>
+    <Tabs
+      screenOptions={{
+        headerShown: true,
+        headerStyle: {
+          backgroundColor: 'white',
+        },
+        headerTitleStyle: {
+          fontSize: 24,
+          fontWeight: 'bold',
+          color: '#1877F2',
+        },
+        headerShadowVisible: false,
+        headerRight: () => (
+          <Pressable 
+            onPress={handleLogout} 
+            style={{ 
+              marginRight: 15,
+              padding: 8,
+            }}
+          >
+            <Ionicons name="log-out-outline" size={24} color="#666" />
+          </Pressable>
+        ),
+        tabBarButton: HapticTab,
+        tabBarActiveTintColor: '#1877F2',
+        tabBarInactiveTintColor: '#999',
+        tabBarStyle: {
+          backgroundColor: 'white',
+          borderTopWidth: 1,
+          borderTopColor: '#E5E5E5',
+          height: 60,
+          paddingBottom: 8,
+          paddingTop: 8,
+        },
+        tabBarLabelStyle: {
+          fontSize: 12,
+          fontWeight: '600',
+        },
+      }}
+    >
+      <Tabs.Screen
+        name="index"
+        options={{
+          title: 'Home',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="home" size={size || 24} color={color} />
           ),
-          tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-          tabBarButton: HapticTab,
-        }}>
-        <Tabs.Screen
-          name="index"
-          options={{
-            title: 'Home',
-            tabBarIcon: ({ color }) => (
-              <IconSymbol size={28} name="house.fill" color={color} />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="explore"
-          options={{
-            title: 'Test',
-            tabBarIcon: ({ color }) => (
-              <IconSymbol size={28} name="paperplane.fill" color={color} />
-            ),
-          }}
-        />
-      </Tabs>
-    );
+        }}
+      />
+      <Tabs.Screen
+        name="explore"
+        options={{
+          title: 'Draft',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="create-outline" size={size || 24} color={color} />
+          ),
+        }}
+      />
+    </Tabs>
+  );
 }

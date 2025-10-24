@@ -1,8 +1,7 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import '../global.css';
 import { Slot, usePathname, useRouter, useSegments } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../supabase';
-import { useColorScheme } from '@/hooks/use-color-scheme';
 import { ActivityIndicator, View } from 'react-native';
 
 export default function RootLayout() {
@@ -10,7 +9,6 @@ export default function RootLayout() {
   const segments = useSegments();
   const pathname = usePathname();
   const router = useRouter();
-  const colorScheme = useColorScheme();
 
     useEffect(() => {
     let isMounted = true;
@@ -42,17 +40,13 @@ export default function RootLayout() {
 
   if (isAuthenticated === null) {
     return (
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-          <ActivityIndicator />
-        </View>
-      </ThemeProvider>
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+        <ActivityIndicator />
+      </View>
     );
   }
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Slot />
-    </ThemeProvider>
+    <Slot />
   );
 }
