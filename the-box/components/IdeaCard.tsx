@@ -29,35 +29,53 @@ const IdeaCard: React.FC<Props> = ({ idea, onComment, onFollow }) => {
   return (
     <View className="bg-white rounded-2xl mx-4 mb-3 border border-gray-200 overflow-hidden">
       <View className="p-4">
-        <Text className="text-gray-500 text-xs mb-2">
-          {formatDate(idea.created_at)}
-        </Text>
-
-        <Text className="text-black text-base leading-5 mb-3">
+        <View className="flex-row justify-between items-start mb-2">
+          {idea.subject && (
+            <Text className="text-black text-base font-semibold flex-1">
+              {idea.subject}
+            </Text>
+          )}
+          <Text className="text-gray-500 text-xs ml-2">
+            {formatDate(idea.created_at)}
+          </Text>
+        </View>
+        <Text className="text-gray-700 text-base leading-5 mb-3">
           {idea.description}
         </Text>
-
-        <View className="mb-3">
+        <View className="flex-row gap-2 mb-3 flex-wrap">
           <View 
-            className="self-start rounded-full px-4 py-1.5"
+            className="rounded-full px-4 py-1.5"
             style={{ backgroundColor: '#1877F2' }}
           >
             <Text className="text-white text-xs font-semibold">
               {idea.status}
             </Text>
           </View>
+          
+          {idea.department && (
+            <View 
+              className="rounded-full px-4 py-1.5 border border-gray-300"
+              style={{ backgroundColor: '#F5F5F5' }}
+            >
+              <Text className="text-gray-700 text-xs font-semibold">
+                {idea.department}
+              </Text>
+            </View>
+          )}
         </View>
 
         <View className="flex-row gap-2">
           <TouchableOpacity
+          //todo: implement onComment
             className="flex-row items-center justify-center gap-1.5 bg-white border border-gray-300 rounded-lg px-4 py-2 active:opacity-70"
             onPress={onComment}
           >
             <Ionicons name="chatbubble-outline" size={18} color="#000" />
             <Text className="text-black text-sm font-medium">Comment</Text>
           </TouchableOpacity>
-          
+        
           <TouchableOpacity
+            //todo: implement onFollow
             className="flex-row items-center justify-center gap-1.5 bg-white border border-gray-300 rounded-lg px-4 py-2 active:opacity-70"
             onPress={onFollow}
           >

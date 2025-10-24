@@ -36,7 +36,7 @@ export default function HomeScreen() {
       
       const { data, error } = await supabase
         .from('ideas')
-        .select('id, subject, description, status, created_at, company_id')
+        .select('id, subject, description, status, created_at, company_id, department')
         .eq('company_id', userProfile.company_id)
         .order('created_at', { ascending: false });
 
