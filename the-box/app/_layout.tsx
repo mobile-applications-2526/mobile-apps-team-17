@@ -1,25 +1,58 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
-
+import { Slot, usePathname, useRouter, useSegments } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import { supabase } from '../supabase';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import React from 'react';
-
-export const unstable_settings = {
-  anchor: '(tabs)',
-};
+import { ActivityIndicator, View } from 'react-native';
 
 export default function RootLayout() {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const segments = useSegments();
+  const pathname = usePathname();
+  const router = useRouter();
   const colorScheme = useColorScheme();
+
+    useEffect(() => {
+    let isMounted = true;
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (isMounted) setIsAuthenticated(!!session);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsAuthenticated(!!session);
+    });
+
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (isAuthenticated === null) return;
+    const inAuthGroup = segments[0] === '(auth)';
+
+    if (!isAuthenticated && !inAuthGroup && pathname !== '/(auth)/welcome') {
+      router.replace('/(auth)/welcome');
+    } else if (isAuthenticated && inAuthGroup && pathname !== '/(tabs)') {
+      router.replace('/(tabs)');
+    }
+  }, [isAuthenticated, segments, pathname, router]);
+
+  if (isAuthenticated === null) {
+    return (
+      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+          <ActivityIndicator />
+        </View>
+      </ThemeProvider>
+    );
+  }
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-      </Stack>
-      <StatusBar style="auto" />
+      <Slot />
     </ThemeProvider>
   );
 }

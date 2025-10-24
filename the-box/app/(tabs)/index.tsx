@@ -1,72 +1,154 @@
-import { useEffect, useState } from 'react';
-import { Image } from 'expo-image';
-import { StyleSheet } from 'react-native';
-
-import { supabase } from '../../supabase';
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
-import React from 'react';
-
-type Company = { name: string };
+import React, { useEffect, useState, useCallback } from 'react';
+import { View, Text, ActivityIndicator, FlatList, RefreshControl, StyleSheet } from 'react-native';
+import IdeaCard from '@/components/IdeaCard';
+import { supabase } from '@/supabase';
+import { Idea } from '@/types';
 
 export default function HomeScreen() {
-  const [companies, setCompanies] = useState<Company[] | null>(null);
+  const [ideas, setIdeas] = useState<Idea[]>([]);
   const [loading, setLoading] = useState(true);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const load = async () => {
-      setLoading(true);
-      setErrorMsg(null);
-      const { data, error } = await supabase.from('companies').select('name');
+  const load = useCallback(async () => {
+    setError(null);
+    setLoading(true);
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setError('Not authenticated');
+        setLoading(false);
+        return;
+      }
+
+      const { data: userProfile, error: profileError } = await supabase
+        .from('users')
+        .select('company_id')
+        .eq('id', user.id)
+        .single();
+
+      if (profileError) {
+        setError(profileError.message);
+        setLoading(false);
+        return;
+      }
+      
+      const { data, error } = await supabase
+        .from('ideas')
+        .select('id, subject, description, status, created_at, company_id')
+        .eq('company_id', userProfile.company_id)
+        .order('created_at', { ascending: false });
 
       if (error) {
-        setErrorMsg(error.message);
-        setCompanies(null);
+        setError(error.message);
       } else {
-        setCompanies(data ?? []);
+        setIdeas(data ?? []);
       }
+    } catch (err: any) {
+      setError(err.message ?? 'Unknown error');
+    } finally {
       setLoading(false);
-    };
-
-    load();
+    }
   }, []);
 
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await load();
+    setRefreshing(false);
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color="#007AFF" />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.center}>
+        <Text style={styles.error}>Error: {error}</Text>
+      </View>
+    );
+  }
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Companies</ThemedText>
-        {loading && <ThemedText>Loading…</ThemedText>}
-        {errorMsg && <ThemedText>{`Error: ${errorMsg}`}</ThemedText>}
-        {companies?.map((c, idx) => (
-          <ThemedText key={`${c.name}-${idx}`}>• {c.name}</ThemedText>
-        ))}
-        {!loading && !errorMsg && companies?.length === 0 && (
-          <ThemedText>(no companies yet)</ThemedText>
+    <View style={styles.container}>
+      <FlatList
+        data={ideas}
+        keyExtractor={(item) => String(item.id)}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+        contentContainerStyle={styles.listContent}
+        showsVerticalScrollIndicator={false}
+        renderItem={({ item }) => (
+          <IdeaCard 
+            idea={item}
+            onComment={() => {
+              console.log('Comment on idea:', item.id);
+            }}
+            onFollow={() => {
+              console.log('Follow idea:', item.id);
+            }}
+          />
         )}
-      </ThemedView>
-
-    </ParallaxScrollView>
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>No ideas yet.</Text>
+            <Text style={styles.emptySubtext}>
+              Be the first to share an idea!
+            </Text>
+          </View>
+        }
+      />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  stepContainer: { gap: 8, marginBottom: 8 },
-  reactLogo: { height: 178, width: 290, bottom: 0, left: 0, position: 'absolute' },
+  container: {
+    flex: 1,
+    backgroundColor: '#F5F5F5',
+  },
+  center: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F5F5F5',
+  },
+  listContent: {
+    paddingTop: 16,
+    paddingBottom: 20,
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 100,
+    paddingHorizontal: 40,
+  },
+  emptyText: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  emptySubtext: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+  },
+  error: {
+    textAlign: 'center',
+    color: '#FF3B30',
+    fontSize: 16,
+    padding: 20,
+  },
 });
