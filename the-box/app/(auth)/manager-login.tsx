@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { View, TextInput, Text, Pressable, Alert, StyleSheet } from 'react-native';
-import { useRouter } from 'expo-router';
 import { supabase } from '@/supabase';
+import { useRouter } from 'expo-router';
+import { useState } from 'react';
+import { Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 export default function ManagerLoginScreen() {
   const router = useRouter();

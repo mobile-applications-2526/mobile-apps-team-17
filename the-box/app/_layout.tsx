@@ -1,14 +1,24 @@
-import '../global.css';
 import { Stack, usePathname, useRouter, useSegments } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
+import Splash from '../components/Splash';
+import '../global.css';
 import { supabase } from '../supabase';
-import { ActivityIndicator, View } from 'react-native';
 
 export default function RootLayout() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [showSplash, setShowSplash] = useState(true);
   const segments = useSegments();
   const pathname = usePathname();
   const router = useRouter();
+
+  // Show splash for 2 seconds on initial load
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowSplash(false);
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, []);
 
     useEffect(() => {
     let isMounted = true;
@@ -38,12 +48,9 @@ export default function RootLayout() {
     }
   }, [isAuthenticated, segments, pathname, router]);
 
-  if (isAuthenticated === null) {
-    return (
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-        <ActivityIndicator />
-      </View>
-    );
+  // Show splash screen for 2 seconds on initial load or while checking auth
+  if (showSplash || isAuthenticated === null) {
+    return <Splash />;
   }
 
   return (

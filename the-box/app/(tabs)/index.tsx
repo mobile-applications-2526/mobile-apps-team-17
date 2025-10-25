@@ -1,10 +1,11 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, ActivityIndicator, FlatList, RefreshControl, StyleSheet, TouchableOpacity } from 'react-native';
 import IdeaCard from '@/components/IdeaCard';
+import Splash from '@/components/Splash';
 import { supabase } from '@/supabase';
 import { Idea } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { useCallback, useEffect, useState } from 'react';
+import { FlatList, RefreshControl, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function HomeScreen() {
   const [ideas, setIdeas] = useState<Idea[]>([]);
@@ -70,11 +71,7 @@ export default function HomeScreen() {
   };
 
   if (loading) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color="#1877F2" />
-      </View>
-    );
+    return <Splash />;
   }
 
   if (error) {
