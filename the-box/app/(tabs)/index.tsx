@@ -1,11 +1,18 @@
-import IdeaCard from '@/components/IdeaCard';
-import Splash from '@/components/Splash';
-import { supabase } from '@/supabase';
-import { Idea } from '@/types';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
-import { FlatList, RefreshControl, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import IdeaCard from "@/components/IdeaCard";
+import Splash from "@/components/Splash";
+import { supabase } from "@/supabase";
+import { Idea } from "@/types";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
+import {
+  FlatList,
+  RefreshControl,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 export default function HomeScreen() {
   const [ideas, setIdeas] = useState<Idea[]>([]);
@@ -17,19 +24,21 @@ export default function HomeScreen() {
   const load = useCallback(async () => {
     setError(null);
     setLoading(true);
-    
+
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) {
-        setError('Not authenticated');
+        setError("Not authenticated");
         setLoading(false);
         return;
       }
 
       const { data: userProfile, error: profileError } = await supabase
-        .from('users')
-        .select('company_id')
-        .eq('id', user.id)
+        .from("users")
+        .select("company_id")
+        .eq("id", user.id)
         .single();
 
       if (profileError) {
@@ -37,12 +46,14 @@ export default function HomeScreen() {
         setLoading(false);
         return;
       }
-      
+
       const { data, error } = await supabase
-        .from('ideas')
-        .select('id, subject, department, description, status, created_at, company_id')
-        .eq('company_id', userProfile.company_id)
-        .order('created_at', { ascending: false });
+        .from("ideas")
+        .select(
+          "id, subject, department, description, status, created_at, company_id"
+        )
+        .eq("company_id", userProfile.company_id)
+        .order("created_at", { ascending: false });
 
       if (error) {
         setError(error.message);
@@ -50,7 +61,7 @@ export default function HomeScreen() {
         setIdeas(data ?? []);
       }
     } catch (err: any) {
-      setError(err.message ?? 'Unknown error');
+      setError(err.message ?? "Unknown error");
     } finally {
       setLoading(false);
     }
@@ -67,7 +78,7 @@ export default function HomeScreen() {
   };
 
   const handleAddIdea = () => {
-    router.push('/create-idea');
+    router.push("/create-idea");
   };
 
   if (loading) {
@@ -93,13 +104,13 @@ export default function HomeScreen() {
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
         renderItem={({ item }) => (
-          <IdeaCard 
+          <IdeaCard
             idea={item}
             onComment={() => {
-              console.log('Comment on idea:', item.id);
+              console.log("Comment on idea:", item.id);
             }}
             onFollow={() => {
-              console.log('Follow idea:', item.id);
+              console.log("Follow idea:", item.id);
             }}
           />
         )}
@@ -133,57 +144,57 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: "#F5F5F5",
   },
   center: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#F5F5F5',
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#F5F5F5",
   },
   listContent: {
     paddingTop: 16,
     paddingBottom: 100,
   },
   emptyContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     marginTop: 100,
     paddingHorizontal: 40,
   },
   emptyText: {
     fontSize: 20,
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: "600",
+    color: "#333",
     marginBottom: 8,
-    textAlign: 'center',
+    textAlign: "center",
   },
   emptySubtext: {
     fontSize: 16,
-    color: '#666',
-    textAlign: 'center',
+    color: "#666",
+    textAlign: "center",
   },
   error: {
-    textAlign: 'center',
-    color: '#FF3B30',
+    textAlign: "center",
+    color: "#FF3B30",
     fontSize: 16,
     padding: 20,
   },
   fabContainer: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 20,
     left: 16,
     right: 16,
   },
   fab: {
-    backgroundColor: '#1877F2',
+    backgroundColor: "#1877F2",
     borderRadius: 16,
     paddingVertical: 16,
     paddingHorizontal: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 4,
@@ -196,8 +207,8 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   fabText: {
-    color: 'white',
+    color: "white",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });
