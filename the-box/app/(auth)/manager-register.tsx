@@ -102,7 +102,6 @@ export default function ManagerRegisterScreen() {
         value={fullName}
         onChangeText={setFullName}
         editable={!loading}
-        className="mt-4"
       />
 
       <TouchableOpacity
