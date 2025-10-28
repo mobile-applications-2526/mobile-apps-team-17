@@ -9,6 +9,8 @@ export default function Input({ className = "", ...props }) {
       className={`${inputClassName} ${className}`}
       placeholderTextColor="#0E121A80"
       color="#0E121A"
+      multiline={true}
+      textAlignVertical="top"
       {...props}
     />
   );

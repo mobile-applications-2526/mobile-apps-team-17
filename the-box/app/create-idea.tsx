@@ -1,18 +1,19 @@
-import { Ionicons } from "@expo/vector-icons";
+import Input from "@/components/forms/Input";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
+import PaperPlaneIcon from "../assets/images/paper-plane-icon.png";
+import ReturnIcon from "../assets/images/return-icon.png";
 import { supabase } from "../supabase";
 
 export default function CreateIdeaScreen() {
@@ -93,222 +94,101 @@ export default function CreateIdeaScreen() {
 
   return (
     <KeyboardAvoidingView
-      style={styles.container}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
+      className="flex-1 bg-white"
     >
-      <View style={styles.header}>
-        <TouchableOpacity onPress={handleCancel} style={styles.headerButton}>
-          <Ionicons name="arrow-back" size={24} color="#000" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>New Idea</Text>
-        <View style={styles.headerButton} />
-      </View>
-
       <ScrollView
-        style={styles.content}
-        contentContainerStyle={styles.contentContainer}
         keyboardShouldPersistTaps="handled"
+        className="flex-1"
+        contentContainerStyle={{ paddingBottom: 150 }}
       >
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>
-            Topic <Text style={styles.optional}></Text>
-          </Text>
-          <TextInput
-            style={styles.input}
-            placeholder="e.g., Office Environment, Team Building"
-            value={subject}
-            onChangeText={setSubject}
-            editable={!loading}
-          />
-        </View>
+        <View className="bg-white p-6">
+          <View className="mb-6">
+            <Text className="text-xl font-bold text-brand-black mb-2 font-sf-pro">
+              Topic (optional)
+            </Text>
 
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>
-            Department <Text style={styles.required}>*</Text>
-          </Text>
-          <TextInput
-            style={styles.input}
-            placeholder="e.g., HR, IT, Finance"
-            value={department}
-            onChangeText={setDepartment}
-            editable={!loading}
-          />
-        </View>
+            <Input
+              value={subject}
+              onChangeText={setSubject}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              editable={!loading}
+            />
+          </View>
 
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>
-            Your idea / opinion / feedback{" "}
-            <Text style={styles.required}>*</Text>
-          </Text>
-          <TextInput
-            style={[styles.input, styles.textArea]}
-            placeholder="Share your thoughts, ideas, or feedback anonymously..."
-            value={description}
-            onChangeText={setDescription}
-            multiline
-            numberOfLines={8}
-            textAlignVertical="top"
-            editable={!loading}
-          />
+          <View className="">
+            <Text className="text-xl font-bold text-brand-black mb-2 font-sf-pro">
+              Your idea / opinion / feedback{" "}
+              <Text className="text-red-500 font-bold">*</Text>
+            </Text>
+            <Input
+              value={description}
+              onChangeText={setDescription}
+              autoCapitalize="sentences"
+              editable={!loading}
+              style={{ height: 200 }}
+              textAlignVertical="top"
+              multiline={true}
+            />
+          </View>
         </View>
-
-        <Text style={styles.anonymousNote}>
-          💡 Your submission will be anonymous. Your identity will not be
-          revealed.
-        </Text>
       </ScrollView>
 
-      <View style={styles.footer}>
-        <TouchableOpacity
-          style={[styles.submitButton, loading && styles.submitButtonDisabled]}
-          onPress={handleSubmit}
-          disabled={loading}
-          activeOpacity={0.8}
+      <View className="absolute bottom-5 left-4 right-4 z-10">
+        <View
+          className="p-3 rounded-3xl bg-white"
+          style={{
+            shadowColor: "#000000",
+            shadowOffset: { width: 0, height: 0 },
+            shadowOpacity: 0.25,
+            shadowRadius: 30,
+            elevation: 5,
+          }}
         >
-          {loading ? (
-            <ActivityIndicator color="white" />
-          ) : (
-            <>
-              <Ionicons name="send" size={20} color="white" />
-              <Text style={styles.submitButtonText}>Post</Text>
-            </>
-          )}
-        </TouchableOpacity>
+          <View className="flex-row gap-3">
+            <TouchableOpacity
+              className={`flex-1 rounded-2xl py-4 px-5 flex-row items-center justify-start relative ${
+                loading ? "bg-gray-400" : "bg-brand-blue"
+              }`}
+              onPress={handleSubmit}
+              disabled={loading}
+              activeOpacity={0.8}
+            >
+              {loading ? (
+                <ActivityIndicator color="white" />
+              ) : (
+                <>
+                  <Image
+                    source={PaperPlaneIcon}
+                    style={{ width: 24, height: 24 }}
+                  />
+                  <View className="absolute inset-0 flex-row items-center justify-center">
+                    <Text className="text-white text-lg font-bold font-sf-pro ml-3">
+                      Post
+                    </Text>
+                  </View>
+                </>
+              )}
+            </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.cancelButton}
-          onPress={handleCancel}
-          disabled={loading}
-          activeOpacity={0.8}
-        >
-          <Ionicons name="close-circle-outline" size={20} color="#666" />
-          <Text style={styles.cancelButtonText}>Cancel</Text>
-        </TouchableOpacity>
+            <TouchableOpacity
+              className="flex-1 border-2 border-brand-blue rounded-2xl py-4 px-5 flex-row items-center justify-start bg-white relative"
+              onPress={handleCancel}
+              disabled={loading}
+              activeOpacity={0.8}
+            >
+              <Image source={ReturnIcon} style={{ width: 24, height: 24 }} />
+              <View className="absolute inset-0 flex-row items-center justify-center ml-3">
+                <Text className="text-brand-blue text-lg font-bold font-sf-pro">
+                  Return
+                </Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+        </View>
       </View>
     </KeyboardAvoidingView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: "white",
-    borderBottomWidth: 1,
-    borderBottomColor: "#E5E5E5",
-  },
-  headerButton: {
-    width: 40,
-    height: 40,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#000",
-  },
-  content: {
-    flex: 1,
-  },
-  contentContainer: {
-    padding: 16,
-  },
-  inputGroup: {
-    marginBottom: 20,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#333",
-    marginBottom: 8,
-  },
-  optional: {
-    fontSize: 12,
-    color: "#999",
-    fontWeight: "normal",
-  },
-  required: {
-    color: "#FF3B30",
-    fontWeight: "bold",
-  },
-  input: {
-    backgroundColor: "white",
-    borderWidth: 1,
-    borderColor: "#E5E5E5",
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 16,
-    color: "#000",
-  },
-  textArea: {
-    minHeight: 150,
-    paddingTop: 12,
-  },
-  anonymousNote: {
-    fontSize: 13,
-    color: "#666",
-    fontStyle: "italic",
-    marginTop: 8,
-    lineHeight: 18,
-  },
-  footer: {
-    flexDirection: "row",
-    padding: 16,
-    backgroundColor: "white",
-    borderTopWidth: 1,
-    borderTopColor: "#E5E5E5",
-    gap: 12,
-  },
-  submitButton: {
-    flex: 1,
-    backgroundColor: "#1877F2",
-    borderRadius: 12,
-    paddingVertical: 14,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.15,
-    shadowRadius: 3,
-    elevation: 3,
-  },
-  submitButtonDisabled: {
-    backgroundColor: "#B0B0B0",
-  },
-  submitButtonText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  cancelButton: {
-    flex: 1,
-    backgroundColor: "white",
-    borderWidth: 1,
-    borderColor: "#E5E5E5",
-    borderRadius: 12,
-    paddingVertical: 14,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-  },
-  cancelButtonText: {
-    color: "#666",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-});

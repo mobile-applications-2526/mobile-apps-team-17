@@ -1,8 +1,26 @@
 import { Stack, usePathname, useRouter, useSegments } from "expo-router";
 import { useEffect, useState } from "react";
+import { Image, TouchableOpacity } from "react-native";
+import CustomBackIcon from "../assets/images/back-icon.png";
 import Splash from "../components/Splash";
 import "../global.css";
 import { supabase } from "../supabase";
+
+const CustomLeftButton = () => {
+  const router = useRouter();
+
+  return (
+    <TouchableOpacity
+      onPress={() => router.back()}
+      style={{ height: "100%", justifyContent: "center" }}
+    >
+      <Image
+        source={CustomBackIcon}
+        style={{ width: 40, height: 40, marginRight: 7 }}
+      />
+    </TouchableOpacity>
+  );
+};
 
 export default function RootLayout() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
@@ -67,7 +85,18 @@ export default function RootLayout() {
         name="create-idea"
         options={{
           presentation: "modal",
-          headerShown: false,
+          headerShown: true,
+          headerTitle: "Draft",
+          headerShadowVisible: false,
+          headerBackVisible: false,
+          headerStyle: {
+            backgroundColor: "#ffffff",
+          },
+          headerTitleStyle: {
+            fontSize: 48,
+            fontWeight: "bold",
+            color: "#1877F2",
+          },
         }}
       />
     </Stack>
