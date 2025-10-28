@@ -124,7 +124,6 @@ export default function HomeScreen() {
         }
       />
 
-      {/* Floating Action Button */}
       <View style={styles.fabContainer}>
         <TouchableOpacity
           style={styles.fab}
@@ -144,13 +143,11 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F5F5F5",
   },
   center: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#F5F5F5",
   },
   listContent: {
     paddingTop: 16,

@@ -2,7 +2,7 @@ import { TextInput } from "react-native";
 
 export default function Input({ className = "", ...props }) {
   const inputClassName =
-    "border border-brand-black rounded-[7px] px-4 py-4 mb-4 text-input font-sf-pro";
+    "border-2 border-brand-black rounded-[10px] px-4 py-4 mb-4 text-input font-sf-pro";
 
   return (
     <TextInput

@@ -16,71 +16,67 @@ const IdeaCard: React.FC<Props> = ({ idea, onComment, onFollow }) => {
     const diffMs = now.getTime() - date.getTime();
     const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-    
+
     if (diffHours < 24) {
       return `${diffHours}h ago`;
     } else if (diffDays === 1) {
-      return '1 day ago';
+      return "1 day ago";
     } else {
       return `${diffDays} days ago`;
     }
   };
 
   return (
-    <View className="bg-white rounded-2xl mx-4 mb-3 border border-gray-200 overflow-hidden">
-      <View className="p-4">
-        <View className="flex-row justify-between items-start mb-2">
-          {idea.subject && (
-            <Text className="text-black text-base font-semibold flex-1">
-              {idea.subject}
-            </Text>
-          )}
-          <Text className="text-gray-500 text-xs ml-2">
-            {formatDate(idea.created_at)}
+    <View className="mx-4 mb-3">
+      <View className="bg-white rounded-[7px] border-2 border-brand-black p-4 mb-3">
+        <Text className="text-gray-500 text-xs mb-2">
+          {formatDate(idea.created_at)}
+        </Text>
+
+        {idea.subject && (
+          <Text className="text-brand-black text-base font-semibold mb-2">
+            {idea.subject}
           </Text>
-        </View>
-        <Text className="text-gray-700 text-base leading-5 mb-3">
+        )}
+
+        <Text className="text-brand-black text-base leading-5">
           {idea.description}
         </Text>
-        <View className="flex-row gap-2 mb-3 flex-wrap">
-          <View 
-            className="rounded-full px-4 py-1.5"
-            style={{ backgroundColor: '#1877F2' }}
-          >
-            <Text className="text-white text-xs font-semibold">
-              {idea.status}
-            </Text>
-          </View>
-          
-          {idea.department && (
-            <View 
-              className="rounded-full px-4 py-1.5 border border-gray-300"
-              style={{ backgroundColor: '#F5F5F5' }}
-            >
-              <Text className="text-gray-700 text-xs font-semibold">
-                {idea.department}
-              </Text>
-            </View>
-          )}
+      </View>
+
+      <View className="flex-row justify-between items-center gap-3">
+        <View
+          className="rounded-lg px-4 py-2.5"
+          style={{ backgroundColor: "#1877F2" }}
+        >
+          <Text className="text-white text-sm font-semibold">
+            {idea.status}
+          </Text>
         </View>
 
-        <View className="flex-row gap-2">
+        <View className="flex-row flex-1 bg-white border-2 border-brand-black rounded-lg overflow-hidden">
           <TouchableOpacity
-          //todo: implement onComment
-            className="flex-row items-center justify-center gap-1.5 bg-white border border-gray-300 rounded-lg px-4 py-2 active:opacity-70"
+            className="flex-row flex-1 items-center justify-center gap-1.5 px-3 py-2"
             onPress={onComment}
+            activeOpacity={0.7}
           >
-            <Ionicons name="chatbubble-outline" size={18} color="#000" />
-            <Text className="text-black text-sm font-medium">Comment</Text>
+            <Ionicons name="chatbubble-outline" size={18} color="#0E121A" />
+            <Text className="text-brand-black text-sm font-semibold">
+              Comment
+            </Text>
           </TouchableOpacity>
-        
+
+          <View className="w-px bg-brand-black" />
+
           <TouchableOpacity
-            //todo: implement onFollow
-            className="flex-row items-center justify-center gap-1.5 bg-white border border-gray-300 rounded-lg px-4 py-2 active:opacity-70"
+            className="flex-row flex-1 items-center justify-center gap-1.5 px-3 py-2"
             onPress={onFollow}
+            activeOpacity={0.7}
           >
-            <Ionicons name="notifications-outline" size={18} color="#000" />
-            <Text className="text-black text-sm font-medium">Follow</Text>
+            <Ionicons name="notifications-outline" size={18} color="#1877F2" />
+            <Text className="text-brand-blue text-sm font-semibold">
+              Follow
+            </Text>
           </TouchableOpacity>
         </View>
       </View>

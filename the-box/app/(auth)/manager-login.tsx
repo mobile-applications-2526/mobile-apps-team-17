@@ -83,7 +83,7 @@ export default function ManagerLoginScreen() {
   };
 
   return (
-    <View className="flex-1 px-5 justify-center">
+    <View className="bg-white flex-1 px-5 justify-center">
       <Text className="text-2xl font-bold mb-7 text-center font-sf-pro text-brand-black">
         Manager Login
       </Text>
