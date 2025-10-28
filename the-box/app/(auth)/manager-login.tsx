@@ -2,7 +2,7 @@ import { supabase } from "@/supabase";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { Alert, Pressable, Text, TouchableOpacity, View } from "react-native";
+import { Alert, Text, TouchableOpacity, View } from "react-native";
 import Input from "../../components/forms/Input";
 
 export default function ManagerLoginScreen() {
@@ -83,64 +83,93 @@ export default function ManagerLoginScreen() {
   };
 
   return (
-    <View className="bg-white flex-1 px-5 justify-center">
-      <Text className="text-2xl font-bold mb-7 text-center font-sf-pro text-brand-black">
-        Manager Login
-      </Text>
+    <View className="bg-white flex-1 px-5 justify-center ">
+      <View className="mb-20">
+        <Text className="text-xl font-bold text-brand-black mb-3 font-sf-pro">
+          Login as
+        </Text>
 
-      <Input
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        autoCapitalize="none"
-        keyboardType="email-address"
-        editable={!loading}
-      />
+        <View className="flex-row gap-3 w-full mb-3">
+          <TouchableOpacity
+            activeOpacity={0.8}
+            className="flex-1 bg-brand-blue rounded-[7px] py-2 px-6 items-center shadow-lg"
+          >
+            <Text className="text-white text-xl font-bold font-sf-pro">
+              Manager
+            </Text>
+          </TouchableOpacity>
 
-      <View className="relative">
-        <Input
-          placeholder="Password"
-          value={password}
-          onChangeText={handlePasswordChange}
-          onBlur={handlePasswordBlur}
-          secureTextEntry={!showPassword}
-          editable={!loading}
-          className="mb-0"
-        />
-        <TouchableOpacity
-          className="absolute right-0 top-0 h-full px-4 justify-center"
-          onPress={() => setShowPassword(!showPassword)}
-          disabled={loading}
-        >
-          <Ionicons
-            name={showPassword ? "eye" : "eye-off"}
-            size={20}
-            color="#0E121A80"
+          <TouchableOpacity
+            activeOpacity={0.8}
+            className="flex-1 border-2 border-gray-300 rounded-[7px] py-2 px-6 items-center"
+            onPress={() => router.push("/(auth)/employee-login")}
+          >
+            <Text className="text-gray-400 text-lg font-bold font-sf-pro">
+              Employee
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        <View>
+          <Input
+            placeholder="Email"
+            value={email}
+            onChangeText={setEmail}
+            autoCapitalize="none"
+            keyboardType="email-address"
+            editable={!loading}
           />
-        </TouchableOpacity>
+
+          <View className="relative">
+            <Input
+              placeholder="Password"
+              value={password}
+              onChangeText={handlePasswordChange}
+              onBlur={handlePasswordBlur}
+              secureTextEntry={!showPassword}
+              editable={!loading}
+              className="mb-0"
+            />
+            <TouchableOpacity
+              className="absolute right-0 top-0 py-4 px-4 flex-row items-center"
+              onPress={() => setShowPassword(!showPassword)}
+              disabled={loading}
+            >
+              <Ionicons
+                name={showPassword ? "eye" : "eye-off"}
+                size={20}
+                color="#0E121A80"
+              />
+            </TouchableOpacity>
+          </View>
+
+          <View className="flex-row gap-3">
+            <TouchableOpacity
+              className={`flex-1 rounded-[7px] px-4 py-2 items-center ${
+                loading ? "bg-gray-300" : "bg-brand-blue"
+              }`}
+              onPress={handleLogin}
+              disabled={loading}
+              activeOpacity={0.8}
+            >
+              <Text className="text-white text-lg font-bold font-sf-pro">
+                {loading ? "Logging in..." : "Login"}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              className="flex-1 border-2 border-brand-blue rounded-[7px] px-4 py-2 items-center"
+              onPress={() => router.push("/(auth)/manager-register")}
+              disabled={loading}
+              activeOpacity={0.8}
+            >
+              <Text className="text-brand-blue text-lg font-bold font-sf-pro">
+                Signup
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </View>
-
-      <TouchableOpacity
-        className={`mt-2.5 rounded-[7px] px-4 py-4 items-center ${
-          loading ? "bg-gray-300" : "bg-brand-blue"
-        }`}
-        onPress={handleLogin}
-        disabled={loading}
-        activeOpacity={0.8}
-      >
-        <Text className="text-white text-base font-semibold font-sf-pro">
-          {loading ? "Logging in..." : "Login"}
-        </Text>
-      </TouchableOpacity>
-
-      <Pressable
-        className="mt-5 items-center"
-        onPress={() => router.push("/(auth)/manager-register")}
-      >
-        <Text className="text-brand-blue text-sm font-sf-pro">
-          Don't have an account? Register
-        </Text>
-      </Pressable>
     </View>
   );
 }
