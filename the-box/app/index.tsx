@@ -5,7 +5,7 @@ export default function RootIndex() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace("/(tabs)");
+    router.push("/(tabs)");
   }, [router]);
 
   return null;

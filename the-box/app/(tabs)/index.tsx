@@ -1,18 +1,26 @@
 import IdeaCard from "@/components/IdeaCard";
 import Splash from "@/components/Splash";
 import { supabase } from "@/supabase";
-import { Idea } from "@/types";
-import { Ionicons } from "@expo/vector-icons";
+import { Idea } from "@/types/index";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import {
   FlatList,
+  Image,
   RefreshControl,
-  StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import AddIcon from "../../assets/images/add-icon.png";
+
+// TODO - to implement
+const handleFollow = (ideaId: string, isCurrentlyFollowing: boolean) => {
+  console.log(
+    `Idea ${ideaId} follow status toggled to ${!isCurrentlyFollowing}`
+  );
+  return Promise.resolve();
+};
 
 export default function HomeScreen() {
   const [ideas, setIdeas] = useState<Idea[]>([]);
@@ -85,127 +93,66 @@ export default function HomeScreen() {
     return <Splash />;
   }
 
-  if (error) {
-    return (
-      <View style={styles.center}>
-        <Text style={styles.error}>Error: {error}</Text>
-      </View>
-    );
-  }
-
   return (
-    <View style={styles.container}>
+    <View className="flex-1 bg-white">
       <FlatList
         data={ideas}
         keyExtractor={(item) => String(item.id)}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
-        contentContainerStyle={styles.listContent}
-        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingTop: 16, paddingBottom: 120 }}
+        showsVerticalScrollIndicator={true}
         renderItem={({ item }) => (
           <IdeaCard
             idea={item}
             onComment={() => {
               console.log("Comment on idea:", item.id);
             }}
-            onFollow={() => {
-              console.log("Follow idea:", item.id);
-            }}
+            initialIsFollowing={false}
+            onFollow={(isCurrentlyFollowing) =>
+              handleFollow(item.id, isCurrentlyFollowing)
+            }
           />
         )}
         ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>No ideas yet.</Text>
-            <Text style={styles.emptySubtext}>
+          <View className="items-center justify-center mt-[100px] px-10">
+            <Text className="text-xl font-semibold text-[#333] mb-2 text-center">
+              No ideas yet.
+            </Text>
+            <Text className="text-base text-[#666] text-center">
               Be the first to share an idea!
             </Text>
           </View>
         }
       />
 
-      <View style={styles.fabContainer}>
-        <TouchableOpacity
-          style={styles.fab}
-          onPress={handleAddIdea}
-          activeOpacity={0.8}
+      <View className="absolute bottom-5 left-4 right-4">
+        <View
+          className="p-3 rounded-3xl bg-white"
+          style={{
+            shadowColor: "#000000",
+            shadowOffset: { width: 0, height: 0 },
+            shadowOpacity: 0.25,
+            shadowRadius: 30,
+            elevation: 5,
+          }}
         >
-          <View style={styles.fabIconContainer}>
-            <Ionicons name="add-circle" size={28} color="white" />
-          </View>
-          <Text style={styles.fabText}>Ideas, Opinions and More</Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            className="bg-[#1877F2] rounded-2xl py-4 px-5 flex-row items-center justify-start"
+            onPress={handleAddIdea}
+            activeOpacity={0.8}
+          >
+            <Image source={AddIcon} style={{ width: 29, height: 29 }} />
+
+            <View className="flex-1 items-center justify-center">
+              <Text className="text-white text-lg font-bold">
+                Ideas, Opinions and More
+              </Text>
+            </View>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  center: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  listContent: {
-    paddingTop: 16,
-    paddingBottom: 100,
-  },
-  emptyContainer: {
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 100,
-    paddingHorizontal: 40,
-  },
-  emptyText: {
-    fontSize: 20,
-    fontWeight: "600",
-    color: "#333",
-    marginBottom: 8,
-    textAlign: "center",
-  },
-  emptySubtext: {
-    fontSize: 16,
-    color: "#666",
-    textAlign: "center",
-  },
-  error: {
-    textAlign: "center",
-    color: "#FF3B30",
-    fontSize: 16,
-    padding: 20,
-  },
-  fabContainer: {
-    position: "absolute",
-    bottom: 20,
-    left: 16,
-    right: 16,
-  },
-  fab: {
-    backgroundColor: "#1877F2",
-    borderRadius: 16,
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 4.65,
-    elevation: 8,
-  },
-  fabIconContainer: {
-    marginRight: 12,
-  },
-  fabText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-});

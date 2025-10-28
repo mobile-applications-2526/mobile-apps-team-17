@@ -1,15 +1,39 @@
 import { Idea } from "@/types/index";
-import { Ionicons } from "@expo/vector-icons";
-import React from "react";
-import { Text, TouchableOpacity, View } from "react-native";
+import React, { useState } from "react";
+import { Image, Text, TouchableOpacity, View } from "react-native";
+import BellActiveIcon from "../assets/images/bell-active-icon.png";
+import BellIcon from "../assets/images/bell-icon.png";
+import CommentIcon from "../assets/images/comment-icon.png";
 
 type Props = {
   idea: Idea;
+  initialIsFollowing: boolean;
   onComment?: () => void;
-  onFollow?: () => void;
+  onFollow?: (isCurrentlyFollowing: boolean) => Promise<void>;
 };
 
-const IdeaCard: React.FC<Props> = ({ idea, onComment, onFollow }) => {
+const IdeaCard: React.FC<Props> = ({
+  idea,
+  initialIsFollowing,
+  onComment,
+  onFollow,
+}) => {
+  const [isFollowing, setIsFollowing] = useState(initialIsFollowing);
+
+  const handleFollowPress = async () => {
+    if (onFollow) {
+      const newState = !isFollowing;
+      setIsFollowing(newState);
+
+      try {
+        await onFollow(isFollowing);
+      } catch (error) {
+        console.error("Failed to update follow status:", error);
+        setIsFollowing(!newState);
+      }
+    }
+  };
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -27,24 +51,18 @@ const IdeaCard: React.FC<Props> = ({ idea, onComment, onFollow }) => {
   };
 
   return (
-    <View className="mx-4 mb-3">
-      <View className="bg-white rounded-[7px] border-2 border-brand-black p-4 mb-3">
-        <Text className="text-gray-500 text-xs mb-2">
+    <View className="mx-4 mb-10">
+      <View className="bg-white rounded-[7px] border-2 border-brand-black p-3 mb-1">
+        <Text className="text-gray-500 text-xs mb-1">
           {formatDate(idea.created_at)}
         </Text>
 
-        {idea.subject && (
-          <Text className="text-brand-black text-base font-semibold mb-2">
-            {idea.subject}
-          </Text>
-        )}
-
-        <Text className="text-brand-black text-base leading-5">
+        <Text className="text-brand-black text-lg leading-5">
           {idea.description}
         </Text>
       </View>
 
-      <View className="flex-row justify-between items-center gap-3">
+      <View className="flex-row justify-between items-center gap-2">
         <View
           className="rounded-lg px-4 py-2.5"
           style={{ backgroundColor: "#1877F2" }}
@@ -56,11 +74,11 @@ const IdeaCard: React.FC<Props> = ({ idea, onComment, onFollow }) => {
 
         <View className="flex-row flex-1 bg-white border-2 border-brand-black rounded-lg overflow-hidden">
           <TouchableOpacity
-            className="flex-row flex-1 items-center justify-center gap-1.5 px-3 py-2"
+            className="flex-row flex-1 items-center justify-center gap-3 px-3 py-2"
             onPress={onComment}
             activeOpacity={0.7}
           >
-            <Ionicons name="chatbubble-outline" size={18} color="#0E121A" />
+            <Image source={CommentIcon} style={{ width: 20, height: 20 }} />
             <Text className="text-brand-black text-sm font-semibold">
               Comment
             </Text>
@@ -69,12 +87,21 @@ const IdeaCard: React.FC<Props> = ({ idea, onComment, onFollow }) => {
           <View className="w-px bg-brand-black" />
 
           <TouchableOpacity
-            className="flex-row flex-1 items-center justify-center gap-1.5 px-3 py-2"
-            onPress={onFollow}
+            className="flex-row flex-1 items-center justify-center gap-3 px-3 py-2"
+            onPress={handleFollowPress}
             activeOpacity={0.7}
           >
-            <Ionicons name="notifications-outline" size={18} color="#1877F2" />
-            <Text className="text-brand-blue text-sm font-semibold">
+            <Image
+              source={isFollowing ? BellActiveIcon : BellIcon}
+              style={{ width: 20, height: 20 }}
+            />
+            <Text
+              className={
+                isFollowing
+                  ? "text-brand-blue text-sm font-semibold"
+                  : "text-brand-black text-sm font-semibold"
+              }
+            >
               Follow
             </Text>
           </TouchableOpacity>

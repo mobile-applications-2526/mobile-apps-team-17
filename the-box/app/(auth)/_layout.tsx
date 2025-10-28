@@ -2,7 +2,7 @@ import { Stack, useRouter } from "expo-router";
 import { Image, TouchableOpacity } from "react-native";
 import CustomBackIcon from "../../assets/images/back-icon.png";
 
-const CustomHeaderLeft = () => {
+const CustomLeftButton = () => {
   const router = useRouter();
 
   return (
@@ -44,7 +44,7 @@ export default function AuthLayout() {
         name="manager-login"
         options={{
           headerTitle: "Login",
-          headerLeft: () => <CustomHeaderLeft />,
+          headerLeft: () => <CustomLeftButton />,
           headerBackVisible: false,
         }}
       />
@@ -52,7 +52,7 @@ export default function AuthLayout() {
         name="manager-register"
         options={{
           headerTitle: "Signup",
-          headerLeft: () => <CustomHeaderLeft />,
+          headerLeft: () => <CustomLeftButton />,
           headerBackVisible: false,
         }}
       />
@@ -60,7 +60,15 @@ export default function AuthLayout() {
         name="employee-login"
         options={{
           headerTitle: "Login",
-          headerLeft: () => <CustomHeaderLeft />,
+          headerLeft: () => <CustomLeftButton />,
+          headerBackVisible: false,
+        }}
+      />
+      <Stack.Screen
+        name="employee-register"
+        options={{
+          headerTitle: "Signup",
+          headerLeft: () => <CustomLeftButton />,
           headerBackVisible: false,
         }}
       />
