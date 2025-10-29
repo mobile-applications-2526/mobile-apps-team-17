@@ -66,7 +66,7 @@ export default function ManagerRegisterScreen() {
           Sign up as
         </Text>
 
-        <View className="bg-brand-blue rounded-[7px] py-3 px-6 items-center shadow-lg mb-3">
+        <View className="bg-brand-blue rounded-[7px] py-3 px-6 items-center mb-3">
           <Text className=" text-white text-xl font-bold font-sf-pro">
             Manager
           </Text>

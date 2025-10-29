@@ -113,7 +113,6 @@ export default function CreateIdeaScreen() {
               value={subject}
               onChangeText={setSubject}
               autoCapitalize="none"
-              keyboardType="email-address"
               editable={!loading}
             />
           </View>

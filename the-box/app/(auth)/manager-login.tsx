@@ -92,7 +92,7 @@ export default function ManagerLoginScreen() {
         <View className="flex-row gap-3 w-full mb-3">
           <TouchableOpacity
             activeOpacity={0.8}
-            className="flex-1 bg-brand-blue rounded-[7px] py-2 px-6 items-center shadow-lg"
+            className="flex-1 bg-brand-blue rounded-[7px] py-2 px-6 items-center"
           >
             <Text className="text-white text-xl font-bold font-sf-pro">
               Manager

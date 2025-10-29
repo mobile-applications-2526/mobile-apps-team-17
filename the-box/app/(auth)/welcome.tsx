@@ -15,7 +15,7 @@ export default function WelcomeScreen() {
           <TouchableOpacity
             onPress={() => router.push("/(auth)/manager-login")}
             activeOpacity={0.8}
-            className="bg-brand-blue rounded-[7px] py-3 px-6 items-center shadow-lg"
+            className="bg-brand-blue rounded-[7px] py-3 px-6 items-center"
           >
             <Text className="text-white text-xl font-bold font-sf-pro">
               Manager
@@ -25,7 +25,7 @@ export default function WelcomeScreen() {
           <TouchableOpacity
             onPress={() => router.push("/(auth)/employee-register")}
             activeOpacity={0.8}
-            className="bg-brand-blue rounded-[7px] py-3 px-6 items-center shadow-lg"
+            className="bg-brand-blue rounded-[7px] py-3 px-6 items-center"
           >
             <Text className="text-white text-xl font-bold font-sf-pro">
               Employee
