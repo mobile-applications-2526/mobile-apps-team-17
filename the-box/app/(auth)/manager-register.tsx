@@ -2,7 +2,15 @@ import Input from "@/components/forms/Input";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { Alert, Text, TouchableOpacity, View } from "react-native";
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { supabase } from "../../supabase";
 
 export default function ManagerRegisterScreen() {
@@ -60,70 +68,80 @@ export default function ManagerRegisterScreen() {
   };
 
   return (
-    <View className="bg-white flex-1 px-5 justify-center">
-      <View className="mb-20">
-        <Text className="text-xl font-bold text-brand-black mb-3 font-sf-pro">
-          Sign up as
-        </Text>
-
-        <View className="bg-brand-blue rounded-[7px] py-3 px-6 items-center mb-3">
-          <Text className=" text-white text-xl font-bold font-sf-pro">
-            Manager
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={0}
+    >
+      <ScrollView
+        contentContainerStyle={{ flexGrow: 1, justifyContent: "center" }}
+        className="bg-white px-5"
+        showsVerticalScrollIndicator={false}
+      >
+        <View className="mb-20">
+          <Text className="text-xl font-bold text-brand-black mb-3 font-sf-pro">
+            Sign up as
           </Text>
-        </View>
 
-        <Input
-          placeholder="Email"
-          value={email}
-          onChangeText={setEmail}
-          autoCapitalize="none"
-          keyboardType="email-address"
-          editable={!loading}
-        />
+          <View className="bg-brand-blue rounded-[7px] py-3 px-6 items-center mb-3">
+            <Text className=" text-white text-xl font-bold font-sf-pro">
+              Manager
+            </Text>
+          </View>
 
-        <View className="relative">
           <Input
-            placeholder="Password"
-            value={password}
-            onChangeText={handlePasswordChange}
-            onBlur={handlePasswordBlur}
-            secureTextEntry={!showPassword}
+            placeholder="Email"
+            value={email}
+            onChangeText={setEmail}
+            autoCapitalize="none"
+            keyboardType="email-address"
             editable={!loading}
-            className="mb-0"
           />
-          <TouchableOpacity
-            className="absolute right-0 top-0 py-4 px-4 flex-row items-center"
-            onPress={() => setShowPassword(!showPassword)}
-            disabled={loading}
-          >
-            <Ionicons
-              name={showPassword ? "eye" : "eye-off"}
-              size={20}
-              color="#0E121A80"
+
+          <View className="relative">
+            <Input
+              placeholder="Password"
+              value={password}
+              onChangeText={handlePasswordChange}
+              onBlur={handlePasswordBlur}
+              secureTextEntry={!showPassword}
+              editable={!loading}
+              className="mb-0"
             />
+            <TouchableOpacity
+              className="absolute right-0 top-0 py-4 px-4 flex-row items-center"
+              onPress={() => setShowPassword(!showPassword)}
+              disabled={loading}
+            >
+              <Ionicons
+                name={showPassword ? "eye" : "eye-off"}
+                size={20}
+                color="#0E121A80"
+              />
+            </TouchableOpacity>
+          </View>
+
+          <Input
+            placeholder="Full Name"
+            value={fullName}
+            onChangeText={setFullName}
+            editable={!loading}
+          />
+
+          <TouchableOpacity
+            className={`rounded-[7px] px-4 py-3 items-center ${
+              loading ? "bg-gray-300" : "bg-brand-blue"
+            }`}
+            onPress={handleRegister}
+            disabled={loading}
+            activeOpacity={0.8}
+          >
+            <Text className="text-white text-xl font-bold font-sf-pro">
+              {loading ? "Creating Account..." : "Signup"}
+            </Text>
           </TouchableOpacity>
         </View>
-
-        <Input
-          placeholder="Full Name"
-          value={fullName}
-          onChangeText={setFullName}
-          editable={!loading}
-        />
-
-        <TouchableOpacity
-          className={`rounded-[7px] px-4 py-3 items-center ${
-            loading ? "bg-gray-300" : "bg-brand-blue"
-          }`}
-          onPress={handleRegister}
-          disabled={loading}
-          activeOpacity={0.8}
-        >
-          <Text className="text-white text-xl font-bold font-sf-pro">
-            {loading ? "Creating Account..." : "Signup"}
-          </Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
