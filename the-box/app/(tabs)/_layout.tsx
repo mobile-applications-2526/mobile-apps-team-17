@@ -1,7 +1,7 @@
 import { supabase } from "@/supabase";
-import { Ionicons } from "@expo/vector-icons";
 import { Tabs, useRouter } from "expo-router";
-import { Pressable } from "react-native";
+import { Image, Pressable } from "react-native";
+import LogoutIcon from "../../assets/images/logout-icon.png";
 
 export default function TabLayout() {
   const router = useRouter();
@@ -37,7 +37,7 @@ export default function TabLayout() {
               padding: 8,
             }}
           >
-            <Ionicons name="log-out-outline" size={24} color="#666" />
+            <Image source={LogoutIcon} style={{ width: 40, height: 40 }} />
           </Pressable>
         ),
         tabBarStyle: { display: "none" },
