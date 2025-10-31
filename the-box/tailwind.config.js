@@ -6,6 +6,7 @@ module.exports = {
     extend: {
       borderRadius: {
         "7px": "7px",
+        "10px": "10px",
       },
       fontFamily: {
         "sf-pro": ["SF Pro Display"],

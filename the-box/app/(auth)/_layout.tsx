@@ -36,31 +36,15 @@ export default function AuthLayout() {
       }}
     >
       <Stack.Screen
-        name="welcome"
+        name="login"
         options={{
           headerTitle: "Welcome",
-        }}
-      />
-      <Stack.Screen
-        name="manager-login"
-        options={{
-          headerTitle: "Login",
-          headerLeft: () => <CustomLeftButton />,
-          headerBackVisible: false,
         }}
       />
       <Stack.Screen
         name="manager-register"
         options={{
           headerTitle: "Signup",
-          headerLeft: () => <CustomLeftButton />,
-          headerBackVisible: false,
-        }}
-      />
-      <Stack.Screen
-        name="employee-login"
-        options={{
-          headerTitle: "Login",
           headerLeft: () => <CustomLeftButton />,
           headerBackVisible: false,
         }}
