@@ -64,7 +64,7 @@ const IdeaCard: React.FC<Props> = ({
 
       <View className="flex-row justify-between items-center gap-2">
         <View
-          className="rounded-[10px] px-4 py-2.5"
+          className="rounded-[10px] px-4 py-2.5 border-[1px] border-brand-blue"
           style={{ backgroundColor: "#1877F2" }}
         >
           <Text className="text-white text-sm font-semibold">
