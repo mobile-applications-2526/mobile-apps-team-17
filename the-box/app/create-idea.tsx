@@ -112,7 +112,7 @@ export default function CreateIdeaScreen() {
             <Input
               value={subject}
               onChangeText={setSubject}
-              autoCapitalize="none"
+              autoCapitalize="sentences"
               editable={!loading}
             />
           </View>
@@ -130,6 +130,7 @@ export default function CreateIdeaScreen() {
               style={{ height: 200 }}
               textAlignVertical="top"
               multiline={true}
+              className="pt-4"
             />
           </View>
         </View>

@@ -107,6 +107,7 @@ export default function ManagerRegisterScreen() {
               secureTextEntry={!showPassword}
               editable={!loading}
               className="mb-0"
+              autoCapitalize="none"
             />
             <TouchableOpacity
               className="absolute right-0 top-0 py-4 px-4 flex-row items-center"
@@ -126,6 +127,7 @@ export default function ManagerRegisterScreen() {
             value={fullName}
             onChangeText={setFullName}
             editable={!loading}
+            autoCapitalize="words"
           />
 
           <TouchableOpacity

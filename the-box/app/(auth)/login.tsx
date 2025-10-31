@@ -179,6 +179,7 @@ export default function LoginScreen() {
                   secureTextEntry={!showPassword}
                   editable={!loading}
                   className="mb-0"
+                  autoCapitalize="none"
                 />
                 <TouchableOpacity
                   className="absolute right-0 top-0 py-4 px-4 flex-row items-center"
