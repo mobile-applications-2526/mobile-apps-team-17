@@ -52,7 +52,7 @@ const IdeaCard: React.FC<Props> = ({
 
   return (
     <View className="mx-4 mb-10">
-      <View className="bg-white rounded-[10px] border-2 border-brand-black p-3 mb-1">
+      <View className="bg-white rounded-[10px] border-[1.5px] border-brand-black p-3 mb-1">
         <Text className="text-gray-500 text-xs mb-1">
           {formatDate(idea.created_at)}
         </Text>
@@ -72,7 +72,7 @@ const IdeaCard: React.FC<Props> = ({
           </Text>
         </View>
 
-        <View className="flex-row flex-1 bg-white border-2 border-brand-black rounded-[10px] overflow-hidden">
+        <View className="flex-row flex-1 bg-white border-[1.5px] border-brand-black rounded-[10px] overflow-hidden">
           <TouchableOpacity
             className="flex-row flex-1 items-center justify-center gap-3 px-3 py-2"
             onPress={onComment}
