@@ -58,7 +58,7 @@ export default function ManagerRegisterScreen() {
       Alert.alert(
         "Check your email",
         "We sent you a confirmation link. After confirming, please log in.",
-        [{ text: "OK", onPress: () => router.replace("/(auth)/manager-login") }]
+        [{ text: "OK", onPress: () => router.replace("/(auth)/login") }]
       );
     } catch (e: any) {
       Alert.alert("Registration Failed", e.message ?? "Unknown error");

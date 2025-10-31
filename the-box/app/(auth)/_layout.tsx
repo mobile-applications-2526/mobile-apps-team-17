@@ -49,14 +49,6 @@ export default function AuthLayout() {
           headerBackVisible: false,
         }}
       />
-      <Stack.Screen
-        name="employee-register"
-        options={{
-          headerTitle: "Signup",
-          headerLeft: () => <CustomLeftButton />,
-          headerBackVisible: false,
-        }}
-      />
     </Stack>
   );
 }
