@@ -97,6 +97,7 @@ export default function RootLayout() {
             fontWeight: "bold",
             color: "#1877F2",
           },
+          headerTitleAlign: "left",
         }}
       />
     </Stack>

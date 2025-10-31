@@ -32,6 +32,7 @@ export default function AuthLayout() {
           color: "#1877F2",
         },
         headerShadowVisible: false,
+        headerTitleAlign: "left",
       }}
     >
       <Stack.Screen

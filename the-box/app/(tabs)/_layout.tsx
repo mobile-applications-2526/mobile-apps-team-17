@@ -28,6 +28,7 @@ export default function TabLayout() {
           color: "#1877F2",
         },
         headerShadowVisible: false,
+        headerTitleAlign: "left",
         headerRight: () => (
           <Pressable
             onPress={handleLogout}
