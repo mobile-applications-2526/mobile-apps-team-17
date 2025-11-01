@@ -1,5 +1,5 @@
 import { Stack, useRouter } from "expo-router";
-import { Image, Text, TouchableOpacity, View } from "react-native";
+import { Image, TouchableOpacity } from "react-native";
 import CustomBackIcon from "../../assets/images/back-icon.png";
 
 const CustomLeftButton = () => {
@@ -18,20 +18,6 @@ const CustomLeftButton = () => {
   );
 };
 
-const CustomHeaderTitle = (props: any) => (
-  <View style={{ flex: 1, flexDirection: "row" }}>
-    <Text
-      style={{
-        fontSize: 48,
-        fontWeight: "bold",
-        color: "#1877F2",
-      }}
-    >
-      {props.children}
-    </Text>
-  </View>
-);
-
 export default function AuthLayout() {
   return (
     <Stack
@@ -39,20 +25,28 @@ export default function AuthLayout() {
         headerShown: true,
         headerStyle: {
           backgroundColor: "#ffffff",
+          height: 120,
+        } as any,
+        headerTitleStyle: {
+          fontSize: 48,
+          fontWeight: "bold",
+          color: "#1877F2",
         },
+
         headerShadowVisible: false,
+        headerTitleAlign: "left",
       }}
     >
       <Stack.Screen
         name="login"
         options={{
-          headerTitle: () => <CustomHeaderTitle>Welcome</CustomHeaderTitle>,
+          headerTitle: "Welcome",
         }}
       />
       <Stack.Screen
         name="manager-register"
         options={{
-          headerTitle: () => <CustomHeaderTitle>Signup</CustomHeaderTitle>,
+          headerTitle: "Signup",
           headerLeft: () => <CustomLeftButton />,
           headerBackVisible: false,
         }}
