@@ -4,6 +4,7 @@ import { useRouter } from "expo-router";
 import { useState } from "react";
 import { Alert, Text, TouchableOpacity, View } from "react-native";
 import Input from "../../components/forms/Input";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function ManagerLoginScreen() {
   const router = useRouter();
@@ -72,6 +73,10 @@ export default function ManagerLoginScreen() {
         .from("users")
         .update({ last_login: new Date().toISOString() })
         .eq("id", userRow.id);
+
+      alert(userRow.role);
+      
+      await AsyncStorage.setItem("user", JSON.stringify(userRow));
 
       router.replace("/(tabs)");
     } catch (e: any) {
