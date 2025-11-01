@@ -12,6 +12,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -86,6 +87,8 @@ export default function LoginScreen() {
         .from("users")
         .update({ last_login: new Date().toISOString() })
         .eq("id", userRow.id);
+
+      await AsyncStorage.setItem("user", JSON.stringify(userRow));
 
       router.replace("/(tabs)");
     } catch (e: any) {
