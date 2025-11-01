@@ -25,12 +25,14 @@ export default function AuthLayout() {
         headerShown: true,
         headerStyle: {
           backgroundColor: "#ffffff",
-        },
+          height: 120,
+        } as any,
         headerTitleStyle: {
           fontSize: 48,
           fontWeight: "bold",
           color: "#1877F2",
         },
+
         headerShadowVisible: false,
         headerTitleAlign: "left",
       }}
