@@ -21,18 +21,98 @@ export default function LoginScreen() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [employeeLoginCode, setEmployeeLoginCode] = useState(null);
 
   useEffect(() => {
     setShowPassword(false);
     setEmail("");
     setPassword("");
-  }, [role]);
+  }, []);
 
-  // TODO - implement
+  // TODO - not sure why after logging in, it jumps back to login page
   const handleEmployeeLogin = async () => {
     setLoading(true);
 
-    return null;
+    const { data: codeRow, error: codeErr } = await supabase
+          .from("access_codes")
+          .select("*")
+          .eq("code", employeeLoginCode)
+          .single();
+
+    if (codeErr || !codeRow) {
+      alert("Access code not found.");
+      setLoading(false);
+      return;
+    }
+
+    if (codeRow.status !== "available") {
+      alert("Access code is used or expired.");
+      setLoading(false);
+      return;
+    }
+
+    const { data: managerRow, error: userErr } = await supabase
+      .from("users")
+      .select("*")
+      .eq("id", codeRow.created_by)
+      .single();
+    
+    const { data: addEmployee, error } = await supabase
+      .from('users')
+      .insert([
+        {
+          company_id: managerRow.company_id,
+          role: "employee",
+          full_name: null,
+          email: null,
+          created_at: new Date().toISOString(),
+          last_login: null,
+          is_active: true
+        },
+      ])
+      .select();
+    
+    // ensure a stable device id for this device (store it in AsyncStorage if missing)
+    let device_id = "ABCD";
+    if (!device_id) {
+      device_id = `device-${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
+      await AsyncStorage.setItem("deviceId", device_id);
+    }
+
+    // used_at in YYYY-MM-DD
+    const used_at = new Date().toISOString().slice(0, 10);
+
+    const { data: updatedCode, error: updateCodeErr } = await supabase
+      .from("access_codes")
+      .update({
+        status: "used",
+        used_at,
+        device_id,
+      })
+      .eq("id", codeRow.id)
+      .select()
+      .single();
+
+    // if (updateCodeErr || !updatedCode) {
+    //   Alert.alert("Error", "Failed to mark access code as used");
+    //   setLoading(false);
+    //   return;
+    // }
+
+    console.log(addEmployee);
+
+    if (error || !addEmployee || !Array.isArray(addEmployee) || addEmployee.length === 0) {
+      Alert.alert("Error", "Failed to create employee account");
+      setLoading(false);
+      return;
+    }
+
+    // store the created user object (first item in the inserted rows)
+    await AsyncStorage.setItem("user", JSON.stringify(addEmployee[0]));
+
+    // WHY!!!!!!
+    router.replace("/(tabs)");
+    setLoading(false);
   };
 
   // TODO - we shouldn't show alert, instead custom message (component? modal?)
@@ -202,7 +282,11 @@ export default function LoginScreen() {
 
           {role === "employee" && (
             <View>
-              <Input placeholder="Enter code" editable={!loading} />
+              <Input 
+                placeholder="Enter code"
+                editable={!loading}
+                onChange={(e: { nativeEvent: { text: any; }; }) => setEmployeeLoginCode(e.nativeEvent.text)}
+              />
 
               <TouchableOpacity
                 className={`rounded-[10px] px-4 py-3 items-center ${

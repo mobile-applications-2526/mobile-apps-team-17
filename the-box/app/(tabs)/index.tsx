@@ -29,59 +29,59 @@ export default function HomeScreen() {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
-  const load = useCallback(async () => {
-    setError(null);
-    setLoading(true);
+  // const load = useCallback(async () => {
+  //   setError(null);
+  //   setLoading(true);
 
-    try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) {
-        setError("Not authenticated");
-        setLoading(false);
-        return;
-      }
+  //   try {
+      // const {
+      //   data: { user },
+      // } = await supabase.auth.getUser();
+      // if (!user) {
+      //   setError("Not authenticated");
+      //   setLoading(false);
+      //   return;
+      // }
 
-      const { data: userProfile, error: profileError } = await supabase
-        .from("users")
-        .select("company_id")
-        .eq("id", user.id)
-        .single();
+      // const { data: userProfile, error: profileError } = await supabase
+      //   .from("users")
+      //   .select("company_id")
+      //   .eq("id", user.id)
+      //   .single();
 
-      if (profileError) {
-        setError(profileError.message);
-        setLoading(false);
-        return;
-      }
+      // if (profileError) {
+      //   setError(profileError.message);
+      //   setLoading(false);
+      //   return;
+      // }
 
-      const { data, error } = await supabase
-        .from("ideas")
-        .select(
-          "id, subject, department, description, status, created_at, company_id"
-        )
-        .eq("company_id", userProfile.company_id)
-        .order("created_at", { ascending: false });
+      // const { data, error } = await supabase
+      //   .from("ideas")
+      //   .select(
+      //     "id, subject, department, description, status, created_at, company_id"
+      //   )
+      //   .eq("company_id", userProfile.company_id)
+      //   .order("created_at", { ascending: false });
 
-      if (error) {
-        setError(error.message);
-      } else {
-        setIdeas(data ?? []);
-      }
-    } catch (err: any) {
-      setError(err.message ?? "Unknown error");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  //     if (error) {
+  //       setError(error.message);
+  //     } else {
+  //       setIdeas(data ?? []);
+  //     }
+  //   } catch (err: any) {
+  //     setError(err.message ?? "Unknown error");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // }, []);
 
-  useEffect(() => {
-    load();
-  }, [load]);
+  // useEffect(() => {
+  //   load();
+  // }, [load]);
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await load();
+    // await load();
     setRefreshing(false);
   };
 
