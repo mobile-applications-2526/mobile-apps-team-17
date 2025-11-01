@@ -2,6 +2,7 @@ import { supabase } from "@/supabase";
 import { Tabs, useRouter } from "expo-router";
 import { Pressable, Image, ActionSheetIOS, Button } from "react-native";
 import MoreIcon from "../../assets/images/more-icon.png";
+import LogoutIcon from "../../assets/images/logout-icon.png";
 import { Menu, MenuOptions, MenuOption, MenuTrigger, MenuProvider } from 'react-native-popup-menu';
 import { Text } from 'react-native';
 import React, { useEffect } from "react";
@@ -37,7 +38,7 @@ export default function TabLayout() {
       }
     } catch (err) {
       console.error("Failed to load user from AsyncStorage:", err);
-      router.replace("/(auth)/welcome");
+      // router.replace("/(auth)/welcome");
     }
   };
 

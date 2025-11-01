@@ -107,7 +107,7 @@ export default function ManagerLoginScreen() {
           <TouchableOpacity
             activeOpacity={0.8}
             className="flex-1 border-2 border-gray-300 rounded-[7px] py-2 px-6 items-center"
-            onPress={() => router.push("/(auth)/employee-login")}
+            onPress={() => router.push("/(auth)/login")}
           >
             <Text className="text-gray-400 text-lg font-bold font-sf-pro">
               Employee
