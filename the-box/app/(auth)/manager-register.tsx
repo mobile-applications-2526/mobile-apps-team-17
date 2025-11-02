@@ -12,6 +12,7 @@ import {
   View,
 } from "react-native";
 import { supabase } from "../../supabase";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function ManagerRegisterScreen() {
   const router = useRouter();
@@ -43,23 +44,36 @@ export default function ManagerRegisterScreen() {
 
     setLoading(true);
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email: email.trim().toLowerCase(),
-        password,
-        options: {
-          data: {
+      // Insert manager directly into users table
+      const now = new Date().toISOString();
+      const { data: inserted, error } = await supabase
+        .from("users")
+        .insert([
+          {
+            email: email.trim().toLowerCase(),
+            password,
             full_name: fullName,
             role: "manager",
+            company_id: null,
+            created_at: now,
+            last_login: now,
+            is_active: true,
           },
-        },
-      });
+        ])
+        .select();
+
       if (error) throw error;
-      // TODO - we shouldn't show alert, instead custom message (component? modal?)
-      Alert.alert(
-        "Check your email",
-        "We sent you a confirmation link. After confirming, please log in.",
-        [{ text: "OK", onPress: () => router.replace("/(auth)/login") }]
-      );
+      if (!inserted || !Array.isArray(inserted) || inserted.length === 0) {
+        throw new Error("Failed to create manager account");
+      }
+
+      const manager = inserted[0];
+
+      // Persist created manager locally so app treats them as signed in
+      await AsyncStorage.setItem("user", JSON.stringify(manager));
+
+      // Navigate into app
+      router.replace("/(tabs)");
     } catch (e: any) {
       Alert.alert("Registration Failed", e.message ?? "Unknown error");
     } finally {

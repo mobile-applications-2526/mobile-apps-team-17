@@ -13,6 +13,7 @@ import {
   View,
 } from "react-native";
 import AddIcon from "../../assets/images/add-icon.png";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // TODO - to implement
 const handleFollow = (ideaId: string, isCurrentlyFollowing: boolean) => {
@@ -29,25 +30,33 @@ export default function HomeScreen() {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
-  // const load = useCallback(async () => {
-  //   setError(null);
-  //   setLoading(true);
+  const load = useCallback(async () => {
+    setError(null);
+    setLoading(true);
 
-  //   try {
-      // const {
-      //   data: { user },
-      // } = await supabase.auth.getUser();
-      // if (!user) {
-      //   setError("Not authenticated");
-      //   setLoading(false);
-      //   return;
-      // }
+    try {
+      const userProfileString = await AsyncStorage.getItem("user");
 
-      // const { data: userProfile, error: profileError } = await supabase
-      //   .from("users")
-      //   .select("company_id")
-      //   .eq("id", user.id)
-      //   .single();
+      if (!userProfileString) {
+        setError("User profile not found");
+        setLoading(false);
+        return;
+      }
+
+      let userProfile: { company_id?: string } | null = null;
+      try {
+        userProfile = JSON.parse(userProfileString);
+      } catch (e) {
+        setError("Invalid user profile stored locally");
+        setLoading(false);
+        return;
+      }
+
+      if (!userProfile?.company_id) {
+        setError("User profile missing company_id");
+        setLoading(false);
+        return;
+      }
 
       // if (profileError) {
       //   setError(profileError.message);
@@ -55,29 +64,29 @@ export default function HomeScreen() {
       //   return;
       // }
 
-      // const { data, error } = await supabase
-      //   .from("ideas")
-      //   .select(
-      //     "id, subject, department, description, status, created_at, company_id"
-      //   )
-      //   .eq("company_id", userProfile.company_id)
-      //   .order("created_at", { ascending: false });
+      const { data, error } = await supabase
+        .from("ideas")
+        .select(
+          "id, subject, department, description, status, created_at, company_id"
+        )
+        .eq("company_id", userProfile.company_id)
+        .order("created_at", { ascending: false });
 
-  //     if (error) {
-  //       setError(error.message);
-  //     } else {
-  //       setIdeas(data ?? []);
-  //     }
-  //   } catch (err: any) {
-  //     setError(err.message ?? "Unknown error");
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // }, []);
+      if (error) {
+        setError(error.message);
+      } else {
+        setIdeas(data ?? []);
+      }
+    } catch (err: any) {
+      setError(err.message ?? "Unknown error");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  // useEffect(() => {
-  //   load();
-  // }, [load]);
+  useEffect(() => {
+    load();
+  }, [load]);
 
   const onRefresh = async () => {
     setRefreshing(true);

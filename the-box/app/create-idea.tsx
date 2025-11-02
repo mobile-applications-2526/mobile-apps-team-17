@@ -15,6 +15,7 @@ import {
 import PaperPlaneIcon from "../assets/images/paper-plane-icon.png";
 import ReturnIcon from "../assets/images/return-icon.png";
 import { supabase } from "../supabase";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function CreateIdeaScreen() {
   const router = useRouter();
@@ -31,30 +32,36 @@ export default function CreateIdeaScreen() {
 
     setLoading(true);
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) {
+      // read stored user profile from AsyncStorage
+      const userString = await AsyncStorage.getItem("user");
+      if (!userString) {
         Alert.alert("Error", "Not authenticated");
         setLoading(false);
         return;
       }
 
-      const { data: userProfile, error: profileError } = await supabase
-        .from("users")
-        .select("company_id")
-        .eq("id", user.id)
-        .single();
+      const storedUser = JSON.parse(userString) as any;
 
-      if (profileError) throw profileError;
+      // try to use company_id from stored profile; fall back to DB if missing
+      let company_id = (storedUser as any).company_id ?? null;
+      if (!company_id) {
+        const { data: userProfile, error: profileError } = await supabase
+          .from("users")
+          .select("company_id")
+          .eq("id", storedUser.id)
+          .single();
+
+        if (profileError) throw profileError;
+        company_id = (userProfile as any).company_id;
+      }
 
       const { error } = await supabase.from("ideas").insert({
-        company_id: userProfile.company_id,
+        company_id,
         subject: subject.trim() || null,
         department: department.trim(),
         description: description.trim(),
         status: "Pending Review",
-        created_by: user.id,
+        created_by: storedUser.id,
         created_at: new Date().toISOString(),
       });
 

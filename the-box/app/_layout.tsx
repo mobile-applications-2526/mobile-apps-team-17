@@ -4,7 +4,7 @@ import { Image, TouchableOpacity } from "react-native";
 import CustomBackIcon from "../assets/images/back-icon.png";
 import Splash from "../components/Splash";
 import "../global.css";
-import { supabase } from "../supabase";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const CustomLeftButton = () => {
   const router = useRouter();
@@ -23,7 +23,6 @@ const CustomLeftButton = () => {
 };
 
 export default function RootLayout() {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [splashTimerDone, setSplashTimerDone] = useState(false);
   const segments = useSegments();
   const pathname = usePathname();
@@ -39,36 +38,38 @@ export default function RootLayout() {
   }, []);
 
   useEffect(() => {
-    let isMounted = true;
+    let mounted = true;
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (isMounted) setIsAuthenticated(!!session);
-    });
+    const checkAndRedirect = async () => {
+      if (!mounted) return;
+      try {
+        const userString = await AsyncStorage.getItem("user");
+        const hasUser = !!userString;
+        const inAuthGroup = segments[0] === "(auth)";
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setIsAuthenticated(!!session);
-    });
+        if (hasUser) {
+          if (inAuthGroup) router.replace("/(tabs)");
+        } else {
+          if (!inAuthGroup && pathname !== "/(auth)/login") {
+            router.replace("/(auth)/login");
+          }
+        }
+      } catch (err) {
+        console.error("Failed to read user from AsyncStorage:", err);
+        if (!mounted) return;
+        // on error assume not authenticated
+        if (pathname !== "/(auth)/login") router.replace("/(auth)/login");
+      }
+    };
+
+    if (splashTimerDone) checkAndRedirect();
 
     return () => {
-      isMounted = false;
-      subscription.unsubscribe();
+      mounted = false;
     };
-  }, []);
+  }, [splashTimerDone, segments, pathname, router]);
 
-  useEffect(() => {
-    if (isAuthenticated === null) return;
-    const inAuthGroup = segments[0] === "(auth)";
-
-    if (!isAuthenticated && !inAuthGroup && pathname !== "/(auth)/login") {
-      router.replace("/(auth)/login");
-    } else if (isAuthenticated && inAuthGroup && pathname !== "/(tabs)") {
-      router.replace("/(tabs)");
-    }
-  }, [isAuthenticated, segments, pathname, router]);
-
-  if (!splashTimerDone || isAuthenticated === null) {
+  if (!splashTimerDone) {
     return <Splash />;
   }
 

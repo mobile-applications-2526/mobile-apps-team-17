@@ -67,7 +67,8 @@ export default function LoginScreen() {
           email: null,
           created_at: new Date().toISOString(),
           last_login: null,
-          is_active: true
+          is_active: true,
+          password: null
         },
       ])
       .select();
@@ -93,11 +94,11 @@ export default function LoginScreen() {
       .select()
       .single();
 
-    // if (updateCodeErr || !updatedCode) {
-    //   Alert.alert("Error", "Failed to mark access code as used");
-    //   setLoading(false);
-    //   return;
-    // }
+    if (updateCodeErr || !updatedCode) {
+      Alert.alert("Error", "Failed to mark access code as used");
+      setLoading(false);
+      return;
+    }
 
     console.log(addEmployee);
 
@@ -124,50 +125,27 @@ export default function LoginScreen() {
     setLoading(true);
 
     try {
-      const { data: authData, error: authError } =
-        await supabase.auth.signInWithPassword({
-          email: email.trim().toLowerCase(),
-          password,
-        });
-      if (authError) throw authError;
-
-      const { data: rpc, error: rpcError } = await supabase.rpc(
-        "register_manager",
-        {
-          p_email: email.trim().toLowerCase(),
-          p_full_name: authData.user?.user_metadata?.full_name ?? "",
-          p_company_name: authData.user?.user_metadata?.company_name ?? "",
-        }
-      );
-
-      if (rpcError) {
-        const msg = (rpcError as any).message ?? "";
-        if (!msg.toLowerCase().includes("already")) throw rpcError;
-      } else if (
-        rpc &&
-        rpc.success === false &&
-        !String(rpc.error).toLowerCase().includes("already")
-      ) {
-        throw new Error(rpc.error);
-      }
-
+      // Lookup manager by email/password in users table (replace auth flow)
       const { data: userRow, error: userErr } = await supabase
         .from("users")
         .select("id, role, company_id, full_name, email")
-        .eq("id", authData.user.id)
-        .single();
+        .eq("email", email.trim().toLowerCase())
+        .eq("password", password)
+        .maybeSingle();
 
-      if (userErr || !userRow) throw new Error("User profile not found");
+      if (userErr) throw userErr;
+      if (!userRow) throw new Error("Invalid email or password");
       if (userRow.role !== "manager") {
-        await supabase.auth.signOut();
         throw new Error("This login is for managers only");
       }
 
+      // update last_login
       await supabase
         .from("users")
         .update({ last_login: new Date().toISOString() })
         .eq("id", userRow.id);
 
+      // persist manager profile locally
       await AsyncStorage.setItem("user", JSON.stringify(userRow));
 
       router.replace("/(tabs)");
