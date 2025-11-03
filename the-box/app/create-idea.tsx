@@ -26,7 +26,7 @@ export default function CreateIdeaScreen() {
 
   const handleSubmit = async () => {
     if (!description.trim()) {
-      Alert.alert("Error", "Please enter your idea description");
+      Alert.alert("Error", "You don't seem to have written anything...");
       return;
     }
 
@@ -43,24 +43,24 @@ export default function CreateIdeaScreen() {
       const storedUser = JSON.parse(userString) as any;
 
       // try to use company_id from stored profile; fall back to DB if missing
-      let company_id = (storedUser as any).company_id ?? null;
-      if (!company_id) {
-        const { data: userProfile, error: profileError } = await supabase
-          .from("users")
-          .select("company_id")
-          .eq("id", storedUser.id)
-          .single();
+      // let company_id = (storedUser as any).company_id ?? null;
+      // if (!company_id) {
+      //   const { data: userProfile, error: profileError } = await supabase
+      //     .from("users")
+      //     .select("company_id")
+      //     .eq("id", storedUser.id)
+      //     .single();
 
-        if (profileError) throw profileError;
-        company_id = (userProfile as any).company_id;
-      }
+      //   if (profileError) throw profileError;
+      //   company_id = (userProfile as any).company_id;
+      // }
 
       const { error } = await supabase.from("ideas").insert({
-        company_id,
+        company_id: storedUser.company_id,
         subject: subject.trim() || null,
-        department: department.trim(),
+        department: department.trim() || null,
         description: description.trim(),
-        status: "Pending Review",
+        status: "open",
         created_by: storedUser.id,
         created_at: new Date().toISOString(),
       });
@@ -70,7 +70,7 @@ export default function CreateIdeaScreen() {
       Alert.alert("Success", "Your idea has been submitted!", [
         {
           text: "OK",
-          onPress: () => router.back(),
+          onPress: () => router.replace('/(tabs)'),
         },
       ]);
     } catch (err: any) {
