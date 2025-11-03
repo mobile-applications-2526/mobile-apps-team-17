@@ -21,6 +21,7 @@ export default function ManagerRegisterScreen() {
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [companyName, setCompanyName] = useState("");
 
   const handlePasswordChange = (text: string) => {
     setPassword(text);
@@ -46,6 +47,16 @@ export default function ManagerRegisterScreen() {
     try {
       // Insert manager directly into users table
       const now = new Date().toISOString();
+
+      const {data: companyRow, error: errCompany} = await supabase
+        .from("companies")
+        .select('*')
+        .eq('name', companyName)
+        .single();
+
+      if (errCompany) throw errCompany;
+      if (!companyRow) throw new Error('Company not found');
+      
       const { data: inserted, error } = await supabase
         .from("users")
         .insert([
@@ -54,7 +65,7 @@ export default function ManagerRegisterScreen() {
             password,
             full_name: fullName,
             role: "manager",
-            company_id: null,
+            company_id: companyRow.id,
             created_at: now,
             last_login: now,
             is_active: true,
@@ -140,6 +151,14 @@ export default function ManagerRegisterScreen() {
             placeholder="Full Name"
             value={fullName}
             onChangeText={setFullName}
+            editable={!loading}
+            autoCapitalize="words"
+          />
+
+          <Input
+            placeholder="Company Name"
+            value={companyName}
+            onChangeText={setCompanyName}
             editable={!loading}
             autoCapitalize="words"
           />
