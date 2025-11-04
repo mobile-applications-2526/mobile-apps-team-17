@@ -24,6 +24,19 @@ export default function CreateIdeaScreen() {
   const [department, setDepartment] = useState("");
   const [loading, setLoading] = useState(false);
 
+  
+  const getLastFriday =() => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = today.getMonth();
+
+    const date = new Date(year, month + 1, 0); // last day of current month
+    while (date.getDay() !== 5) {
+      date.setDate(date.getDate() - 1);
+    }
+    return date;
+  }
+
   const handleSubmit = async () => {
     if (!description.trim()) {
       Alert.alert("Error", "You don't seem to have written anything...");
@@ -55,12 +68,14 @@ export default function CreateIdeaScreen() {
       //   company_id = (userProfile as any).company_id;
       // }
 
+      const lastFriday = getLastFriday();
+
       const { error } = await supabase.from("ideas").insert({
         company_id: storedUser.company_id,
         subject: subject.trim() || null,
         department: department.trim() || null,
         description: description.trim(),
-        status: "open",
+        status: `to be reviewed on ${lastFriday.toISOString().split('T')[0]}`,
         created_by: storedUser.id,
         created_at: new Date().toISOString(),
       });
