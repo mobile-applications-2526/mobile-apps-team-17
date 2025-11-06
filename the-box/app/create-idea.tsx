@@ -75,7 +75,7 @@ export default function CreateIdeaScreen() {
         subject: subject.trim() || null,
         department: department.trim() || null,
         description: description.trim(),
-        status: `to be reviewed on ${lastFriday.toISOString().split('T')[0]}`,
+        status: `Review date: ${lastFriday.toISOString().split('T')[0]}`,
         created_by: storedUser.id,
         created_at: new Date().toISOString(),
       });
