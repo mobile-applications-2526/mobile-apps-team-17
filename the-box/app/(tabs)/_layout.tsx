@@ -2,6 +2,7 @@ import { supabase } from "@/supabase";
 import { Tabs, useRouter } from "expo-router";
 import { Image, Pressable } from "react-native";
 import LogoutIcon from "../../assets/images/logout-icon.png";
+import PageHeader from "@/components/PageHeader";
 
 export default function TabLayout() {
   const router = useRouter();
@@ -22,11 +23,7 @@ export default function TabLayout() {
         headerStyle: {
           backgroundColor: "#ffffff",
         },
-        headerTitleStyle: {
-          fontSize: 48,
-          fontWeight: "bold",
-          color: "#1877F2",
-        },
+        headerTitle: () => <PageHeader title="Home" />,
         headerShadowVisible: false,
         headerTitleAlign: "left",
         headerRight: () => (
