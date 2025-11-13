@@ -6,7 +6,7 @@ type Props = {
 
 export default function PageHeader({ title }: Props) {
   return (
-    <View className="px-6">
+    <View>
       <Text className=" text-brand-blue text-5xl font-bold font-sf-pro">
         {title}
       </Text>

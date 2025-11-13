@@ -6,6 +6,7 @@ import MoreIcon from "../../assets/images/more-icon.png";
 import { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Clipboard from 'expo-clipboard';
+import PageHeader from "@/components/PageHeader";
 
 export default function TabLayout() {
   const router = useRouter();
@@ -128,11 +129,7 @@ export default function TabLayout() {
         headerStyle: {
           backgroundColor: "#ffffff",
         },
-        headerTitleStyle: {
-          fontSize: 48,
-          fontWeight: "bold",
-          color: "#1877F2",
-        },
+        headerTitle: () => <PageHeader title="Home" />,
         headerShadowVisible: false,
         headerTitleAlign: "left",
         headerRight: () => (
