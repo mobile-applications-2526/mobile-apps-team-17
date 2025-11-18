@@ -1,5 +1,5 @@
 import { Stack, useRouter } from "expo-router";
-import { Image, TouchableOpacity } from "react-native";
+import { Image, Platform, TouchableOpacity } from "react-native";
 import CustomBackIcon from "../../assets/images/back-icon.png";
 
 const CustomLeftButton = () => {
@@ -8,11 +8,11 @@ const CustomLeftButton = () => {
   return (
     <TouchableOpacity
       onPress={() => router.back()}
-      style={{ height: "100%", justifyContent: "center" }}
+      style={{ justifyContent: "center" }}
     >
       <Image
         source={CustomBackIcon}
-        style={{ width: 40, height: 40, marginRight: 7 }}
+        style={{ width: 36, height: 36, marginRight: Platform.OS === "ios" ? 0 : 20 }}
       />
     </TouchableOpacity>
   );
