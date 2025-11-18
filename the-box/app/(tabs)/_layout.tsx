@@ -1,11 +1,11 @@
 import { supabase } from "@/supabase";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as Clipboard from "expo-clipboard";
 import { Tabs, useRouter } from "expo-router";
+import { useEffect, useState } from "react";
 import { ActionSheetIOS, Image, Pressable } from "react-native";
 import LogoutIcon from "../../assets/images/logout-icon.png";
 import MoreIcon from "../../assets/images/more-icon.png";
-import { useEffect, useState } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import * as Clipboard from 'expo-clipboard';
 
 export default function TabLayout() {
   const router = useRouter();
@@ -46,8 +46,8 @@ export default function TabLayout() {
   const showMenu = () => {
     ActionSheetIOS.showActionSheetWithOptions(
       {
-        options: ['Create code', 'Cancel'],
-        cancelButtonIndex: 1
+        options: ["Create code", "Cancel"],
+        cancelButtonIndex: 1,
       },
       (buttonIndex) => {
         if (buttonIndex === 0) handGenerateCode();
@@ -58,7 +58,7 @@ export default function TabLayout() {
   const showMenuCopy = (code: string) => {
     ActionSheetIOS.showActionSheetWithOptions(
       {
-        options: ['Copy code', 'Cancel'],
+        options: ["Copy code", "Cancel"],
         cancelButtonIndex: 1,
         title: "Generated employee code: " + code,
       },
@@ -66,7 +66,7 @@ export default function TabLayout() {
         if (buttonIndex === 0) {
           await Clipboard.setStringAsync(code);
           alert("Code copied to clipboard.");
-        };
+        }
       }
     );
   };
@@ -82,14 +82,20 @@ export default function TabLayout() {
       const mm = pad(now.getMinutes());
       const hh = pad(now.getHours());
 
-      const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()-_=+[]{};:'\",.<>/?\\|~";
-      const random = Array.from({ length: 6 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+      const chars =
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()-_=+[]{};:'\",.<>/?\\|~";
+      const random = Array.from(
+        { length: 6 },
+        () => chars[Math.floor(Math.random() * chars.length)]
+      ).join("");
 
       const code = `${YYYY}${MM}${DD}${ss}${mm}${hh}-${random}`;
 
       const created_by = (user as any)?.id ?? (user as any)?.user_id ?? null;
       const created_at = now.toISOString().split("T")[0]; // YYYY-MM-DD
-      const expires_at = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0]; // +7 days (YYYY-MM-DD)
+      const expires_at = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .split("T")[0]; // +7 days (YYYY-MM-DD)
 
       const { data, error } = await supabase
         .from("access_codes")
@@ -114,12 +120,36 @@ export default function TabLayout() {
       }
 
       showMenuCopy(code);
-
     } catch (err) {
       console.error("Unexpected error creating access code:", err);
       alert("Unexpected error creating access code");
     }
-  }
+  };
+
+  const headerRightButtons = () => (
+    <>
+      <Pressable
+        onPress={handleLogout}
+        style={{
+          marginRight: 15,
+          padding: 8,
+        }}
+      >
+        <Image source={LogoutIcon} style={{ width: 40, height: 40 }} />
+      </Pressable>
+      {openMenu && (
+        <Pressable
+          onPress={showMenu}
+          style={{
+            marginRight: 15,
+            padding: 8,
+          }}
+        >
+          <Image source={MoreIcon} style={{ width: 40, height: 40 }} />
+        </Pressable>
+      )}
+    </>
+  );
 
   return (
     <Tabs
@@ -135,30 +165,6 @@ export default function TabLayout() {
         },
         headerShadowVisible: false,
         headerTitleAlign: "left",
-        headerRight: () => (
-          <>
-            <Pressable
-              onPress={handleLogout}
-              style={{
-                marginRight: 15,
-                padding: 8,
-              }}
-            >
-              <Image source={LogoutIcon} style={{ width: 40, height: 40 }} />
-            </Pressable>
-            {openMenu && (
-              <Pressable
-                onPress={showMenu}
-                style={{
-                  marginRight: 15,
-                  padding: 8,
-                }}
-              >
-              <Image source={MoreIcon} style={{ width: 40, height: 40 }} />
-            </Pressable>
-            )}
-          </>
-        ),
         tabBarStyle: { display: "none" },
       }}
     >
@@ -166,6 +172,14 @@ export default function TabLayout() {
         name="index"
         options={{
           title: "Home",
+          headerRight: headerRightButtons,
+        }}
+      />
+      <Tabs.Screen
+        name="discussion"
+        options={{
+          title: "Discussion",
+          headerRight: undefined,
         }}
       />
     </Tabs>

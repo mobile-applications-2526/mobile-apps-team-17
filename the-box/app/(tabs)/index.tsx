@@ -2,6 +2,7 @@ import IdeaCard from "@/components/IdeaCard";
 import Splash from "@/components/Splash";
 import { supabase } from "@/supabase";
 import { Idea } from "@/types/index";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import {
@@ -13,7 +14,6 @@ import {
   View,
 } from "react-native";
 import AddIcon from "../../assets/images/add-icon.png";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // TODO - to implement
 const handleFollow = (ideaId: string, isCurrentlyFollowing: boolean) => {
@@ -116,7 +116,7 @@ export default function HomeScreen() {
           <IdeaCard
             idea={item}
             onComment={() => {
-              console.log("Comment on idea:", item.id);
+              router.push("/discussion");
             }}
             initialIsFollowing={false}
             onFollow={(isCurrentlyFollowing) =>
