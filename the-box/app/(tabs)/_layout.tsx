@@ -1,3 +1,4 @@
+import PageHeader from "@/components/PageHeader";
 import { supabase } from "@/supabase";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Clipboard from "expo-clipboard";
@@ -126,31 +127,6 @@ export default function TabLayout() {
     }
   };
 
-  const headerRightButtons = () => (
-    <>
-      <Pressable
-        onPress={handleLogout}
-        style={{
-          marginRight: 15,
-          padding: 8,
-        }}
-      >
-        <Image source={LogoutIcon} style={{ width: 40, height: 40 }} />
-      </Pressable>
-      {openMenu && (
-        <Pressable
-          onPress={showMenu}
-          style={{
-            marginRight: 15,
-            padding: 8,
-          }}
-        >
-          <Image source={MoreIcon} style={{ width: 40, height: 40 }} />
-        </Pressable>
-      )}
-    </>
-  );
-
   return (
     <Tabs
       screenOptions={{
@@ -158,28 +134,40 @@ export default function TabLayout() {
         headerStyle: {
           backgroundColor: "#ffffff",
         },
-        headerTitleStyle: {
-          fontSize: 48,
-          fontWeight: "bold",
-          color: "#1877F2",
-        },
+        headerTitle: () => <PageHeader title="Home" />,
         headerShadowVisible: false,
         headerTitleAlign: "left",
+        headerRight: () => (
+          <>
+            {openMenu && (
+              <Pressable
+                onPress={showMenu}
+                style={{
+                  padding: 8,
+                }}
+              >
+                <Image source={MoreIcon} style={{ width: 36, height: 36 }} />
+              </Pressable>
+            )}
+
+            <Pressable
+              onPress={handleLogout}
+              style={{
+                marginRight: 15,
+                padding: 8,
+              }}
+            >
+              <Image source={LogoutIcon} style={{ width: 36, height: 36 }} />
+            </Pressable>
+          </>
+        ),
         tabBarStyle: { display: "none" },
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
-          title: "Home",
-          headerRight: headerRightButtons,
-        }}
-      />
-      <Tabs.Screen
-        name="discussion"
-        options={{
-          title: "Discussion",
-          headerRight: undefined,
+          title: "",
         }}
       />
     </Tabs>

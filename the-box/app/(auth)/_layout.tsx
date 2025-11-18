@@ -12,7 +12,7 @@ const CustomLeftButton = () => {
     >
       <Image
         source={CustomBackIcon}
-        style={{ width: 40, height: 40, marginRight: 7 }}
+        style={{ width: 36, height: 36, marginRight: 7 }}
       />
     </TouchableOpacity>
   );

@@ -51,7 +51,7 @@ const IdeaCard: React.FC<Props> = ({
   };
 
   return (
-    <View className="mx-4 mb-10">
+    <View className="mx-4 mb-8">
       <View className="bg-white rounded-[10px] border-[1.5px] border-brand-black p-3 mb-1">
         <Text className="text-gray-500 text-xs mb-1">
           {formatDate(idea.created_at)}
