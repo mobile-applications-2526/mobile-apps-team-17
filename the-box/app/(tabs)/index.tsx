@@ -112,6 +112,7 @@ export default function HomeScreen() {
         }
         contentContainerStyle={{ paddingTop: 16, paddingBottom: 120 }}
         showsVerticalScrollIndicator={true}
+        ItemSeparatorComponent={() => <View style={{ height: 29 }} />}
         renderItem={({ item }) => (
           <IdeaCard
             idea={item}

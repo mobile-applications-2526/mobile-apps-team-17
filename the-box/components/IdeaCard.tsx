@@ -3,11 +3,13 @@ import React, { useState } from "react";
 import { Image, Text, TouchableOpacity, View } from "react-native";
 import BellActiveIcon from "../assets/images/bell-active-icon.png";
 import BellIcon from "../assets/images/bell-icon.png";
+import CommentActiveIcon from "../assets/images/comment-active-icon.png";
 import CommentIcon from "../assets/images/comment-icon.png";
 
 type Props = {
   idea: Idea;
   initialIsFollowing: boolean;
+  isCommentActive?: boolean;
   onComment?: () => void;
   onFollow?: (isCurrentlyFollowing: boolean) => Promise<void>;
 };
@@ -15,6 +17,7 @@ type Props = {
 const IdeaCard: React.FC<Props> = ({
   idea,
   initialIsFollowing,
+  isCommentActive = false,
   onComment,
   onFollow,
 }) => {
@@ -51,60 +54,62 @@ const IdeaCard: React.FC<Props> = ({
   };
 
   return (
-    <View className="mx-4 mb-8">
+    <View className="mx-4">
       <View className="bg-white rounded-[10px] border-[1.5px] border-brand-black p-3 mb-1">
         <Text className="text-gray-500 text-xs mb-1">
           {formatDate(idea.created_at)}
         </Text>
 
-        <Text className="text-brand-black text-lg leading-5">
+        <Text className="text-brand-black text-lg leading-5 mb-1">
           {idea.description}
         </Text>
       </View>
 
-      <View className="flex-row justify-between items-center gap-2">
-        <View
-          className="rounded-[10px] px-4 py-2.5 border-[1px] border-brand-blue"
-          style={{ backgroundColor: "#1877F2" }}
-        >
-          <Text className="text-white text-sm font-semibold">
+      <View className="flex-row items-center gap-2">
+        <View className="rounded-[10px] px-4 py-2.5 border-[1.5px] border-brand-black bg-white">
+          <Text className="text-brand-blue text-sm font-semibold">
             {idea.status}
           </Text>
         </View>
 
-        <View className="flex-row flex-1 bg-white border-[1.5px] border-brand-black rounded-[10px] overflow-hidden">
-          <TouchableOpacity
-            className="flex-row flex-1 items-center justify-center gap-3 px-3 py-2"
-            onPress={onComment}
-            activeOpacity={0.7}
+        <View className="flex-1 flex-row gap-2">
+          <View
+            className={`flex-1 border-[1.5px] rounded-[10px] ${
+              isCommentActive
+                ? "border-brand-blue bg-brand-blue"
+                : "border-brand-black bg-white"
+            }`}
           >
-            <Image source={CommentIcon} style={{ width: 20, height: 20 }} />
-            <Text className="text-brand-black text-sm font-semibold">
-              Comment
-            </Text>
-          </TouchableOpacity>
-
-          <View className="w-px bg-brand-black" />
-
-          <TouchableOpacity
-            className="flex-row flex-1 items-center justify-center gap-3 px-3 py-2"
-            onPress={handleFollowPress}
-            activeOpacity={0.7}
-          >
-            <Image
-              source={isFollowing ? BellActiveIcon : BellIcon}
-              style={{ width: 20, height: 20 }}
-            />
-            <Text
-              className={
-                isFollowing
-                  ? "text-brand-blue text-sm font-semibold"
-                  : "text-brand-black text-sm font-semibold"
-              }
+            <TouchableOpacity
+              className="flex-row items-center justify-center gap-1.5 px-3 py-2"
+              onPress={onComment}
+              activeOpacity={0.7}
             >
-              Follow
-            </Text>
-          </TouchableOpacity>
+              <Image
+                source={isCommentActive ? CommentActiveIcon : CommentIcon}
+                style={{ width: 20, height: 20 }}
+              />
+            </TouchableOpacity>
+          </View>
+
+          <View
+            className={`flex-1 border-[1.5px] rounded-[10px] ${
+              isFollowing
+                ? "border-brand-blue bg-brand-blue"
+                : "border-brand-black bg-white"
+            }`}
+          >
+            <TouchableOpacity
+              className="flex-row items-center justify-center px-3 py-2"
+              onPress={handleFollowPress}
+              activeOpacity={0.7}
+            >
+              <Image
+                source={isFollowing ? BellActiveIcon : BellIcon}
+                style={{ width: 20, height: 20 }}
+              />
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
     </View>

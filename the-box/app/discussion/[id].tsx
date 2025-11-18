@@ -66,13 +66,28 @@ export default function DiscussionScreen() {
 
       const { data: commentsData, error: commentsError } = await supabase
         .from("comments")
-        .select("*")
+        .select(
+          `
+        *,
+        users:created_by (
+          full_name,
+          department
+        )
+      `
+        )
         .eq("idea_id", id)
         .order("created_at", { ascending: false });
 
       if (commentsError) throw commentsError;
 
-      setComments(commentsData || []);
+      const mappedComments =
+        commentsData?.map((comment: any) => ({
+          ...comment,
+          user_name: comment.users?.full_name,
+          user_department: comment.users?.department,
+        })) || [];
+
+      setComments(mappedComments || []);
     } catch (error) {
       console.error("Error loading discussion:", error);
     } finally {
@@ -163,22 +178,16 @@ export default function DiscussionScreen() {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      className="flex-1 bg-white"
-      keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
+      style={{ flex: 1, backgroundColor: "white" }}
+      keyboardVerticalOffset={0}
     >
-      <ScrollView
-        contentContainerStyle={{ paddingBottom: showCommentInput ? 300 : 120 }}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-      >
+      <View className="flex-1 bg-white">
         <View className="mt-4">
           {idea && (
             <IdeaCard
               idea={idea}
               initialIsFollowing={false}
+              isCommentActive={true}
               onComment={() => {
                 return;
               }}
@@ -189,7 +198,7 @@ export default function DiscussionScreen() {
           )}
         </View>
 
-        <View className="px-5 mb-4">
+        <View className="px-5 mt-5">
           <Text className="text-brand-blue text-[32px] font-bold mb-2">
             Comments
           </Text>
@@ -197,14 +206,14 @@ export default function DiscussionScreen() {
           <View className="flex-row gap-2 mb-2">
             <TouchableOpacity
               onPress={() => setFilterType("all")}
-              className={`rounded-full py-2 px-5 border ${
+              className={`rounded-full py-2 px-6 border items-center justify-center ${
                 filterType === "all"
                   ? "bg-[#1877F2] border-[#1877F2]"
                   : "bg-white border-brand-black"
               }`}
             >
               <Text
-                className={`font-bold text-base ${
+                className={`font-medium text-base ${
                   filterType === "all" ? "text-white" : "text-brand-black"
                 }`}
               >
@@ -214,14 +223,14 @@ export default function DiscussionScreen() {
 
             <TouchableOpacity
               onPress={() => setFilterType("manager")}
-              className={`rounded-full py-2 px-5 border ${
+              className={`flex-1 rounded-full py-2 px-2 border items-center justify-center ${
                 filterType === "manager"
                   ? "bg-[#1877F2] border-[#1877F2]"
                   : "bg-white border-brand-black"
               }`}
             >
               <Text
-                className={`font-bold text-base ${
+                className={`font-medium text-base ${
                   filterType === "manager" ? "text-white" : "text-brand-black"
                 }`}
               >
@@ -229,44 +238,59 @@ export default function DiscussionScreen() {
               </Text>
             </TouchableOpacity>
           </View>
+        </View>
 
-          <View className="mt-4">
-            {filteredComments.length === 0 ? (
-              <View className="items-center justify-center mt-[100px] px-10">
-                <Text className="text-xl font-semibold text-[#333] mb-2 text-center">
-                  No comments yet.
+        <ScrollView
+          style={{ flex: 1 }}
+          className="px-5"
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{ paddingBottom: 180 }}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+        >
+          {filteredComments.length === 0 ? (
+            <View className="items-center justify-center mt-[100px] px-10">
+              <Text className="text-xl font-semibold text-[#333] mb-2 text-center">
+                No comments yet.
+              </Text>
+              <Text className="text-base text-[#666] text-center">
+                Be the first to leave a comment!
+              </Text>
+            </View>
+          ) : (
+            filteredComments.map((comment, index) => (
+              <View
+                key={comment.id}
+                className={`mb-3 pb-3 pt-2 ${
+                  index !== filteredComments.length - 1
+                    ? "border-b border-gray-300"
+                    : ""
+                }`}
+              >
+                <Text className="text-gray-500 text-xs">
+                  {formatDate(comment.created_at)}
                 </Text>
-                <Text className="text-base text-[#666] text-center">
-                  Be the first to leave a comment!
+
+                {comment.commenter_role === "manager" && (
+                  <Text className="text-brand-blue text-base">
+                    <Text className="font-bold">{comment.user_name}</Text>
+                    {comment.user_name && comment.user_department && ", "}
+                    {comment.user_department}
+                  </Text>
+                )}
+
+                <Text className="text-brand-black text-base leading-5">
+                  {comment.content}
                 </Text>
               </View>
-            ) : (
-              filteredComments.map((comment) => (
-                <View
-                  key={comment.id}
-                  className="mb-3 border-b border-gray-300 pb-3"
-                >
-                  <Text className="text-gray-500 text-xs">
-                    {formatDate(comment.created_at)}
-                  </Text>
+            ))
+          )}
+        </ScrollView>
+      </View>
 
-                  {comment.commenter_role === "manager" && (
-                    <Text className="text-[#1877F2] font-bold text-base">
-                      Manager
-                    </Text>
-                  )}
-
-                  <Text className="text-brand-black text-base leading-5">
-                    {comment.content}
-                  </Text>
-                </View>
-              ))
-            )}
-          </View>
-        </View>
-      </ScrollView>
-
-      <View className="absolute bottom-5 left-4 right-4">
+      <View className="px-4 pb-5">
         <View
           className="p-3 rounded-3xl bg-white"
           style={{
