@@ -16,11 +16,13 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import AddIcon from "../../assets/images/add-icon.png";
 import ReturnIcon from "../../assets/images/return-icon.png";
 
 export default function DiscussionScreen() {
   const { id } = useLocalSearchParams();
+  const insets = useSafeAreaInsets();
   const [idea, setIdea] = useState<Idea | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -191,7 +193,7 @@ export default function DiscussionScreen() {
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
       style={{ flex: 1, backgroundColor: "white" }}
       keyboardVerticalOffset={0}
     >
@@ -259,7 +261,9 @@ export default function DiscussionScreen() {
           className="px-5"
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
-          contentContainerStyle={{ paddingBottom: 180 }}
+          contentContainerStyle={{
+            paddingBottom: showCommentInput ? 280 : 180,
+          }}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
@@ -304,7 +308,16 @@ export default function DiscussionScreen() {
         </ScrollView>
       </View>
 
-      <View className="px-4 pb-5">
+      <View
+        className="px-4 bg-white"
+        style={{
+          position: "absolute",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          paddingBottom: Math.max(insets.bottom, 20),
+        }}
+      >
         <View
           className="p-3 rounded-3xl bg-white"
           style={{
