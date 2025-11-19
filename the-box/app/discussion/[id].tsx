@@ -143,7 +143,15 @@ export default function DiscussionScreen() {
       const { data, error } = await supabase
         .from("comments")
         .insert([insertData])
-        .select();
+        .select(
+          `
+          *,
+          users:created_by (
+            full_name,
+            department
+          )
+        `
+        );
 
       if (error) {
         console.error("Error adding comment:", error);
@@ -151,7 +159,13 @@ export default function DiscussionScreen() {
         return;
       }
 
-      setComments([data[0], ...comments]);
+      const newComment = {
+        ...data[0],
+        user_name: data[0].users?.full_name,
+        user_department: data[0].users?.department,
+      };
+
+      setComments([newComment, ...comments]);
       setCommentText("");
       setShowCommentInput(false);
       Keyboard.dismiss();
