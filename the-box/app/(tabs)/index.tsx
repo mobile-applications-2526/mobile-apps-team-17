@@ -2,6 +2,7 @@ import IdeaCard from "@/components/IdeaCard";
 import Splash from "@/components/Splash";
 import { supabase } from "@/supabase";
 import { Idea } from "@/types/index";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import {
@@ -13,22 +14,93 @@ import {
   View,
 } from "react-native";
 import AddIcon from "../../assets/images/add-icon.png";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-
-// TODO - to implement
-const handleFollow = (ideaId: string, isCurrentlyFollowing: boolean) => {
-  console.log(
-    `Idea ${ideaId} follow status toggled to ${!isCurrentlyFollowing}`
-  );
-  return Promise.resolve();
-};
 
 export default function HomeScreen() {
   const [ideas, setIdeas] = useState<Idea[]>([]);
+  const [followedIdeas, setFollowedIdeas] = useState<Idea[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+
+  const userFollowedIdeas = async () => {
+    const userProfileString = await AsyncStorage.getItem("user");
+
+    if (userProfileString) {
+      let userProfile: { id?: string } | null = null;
+      try {
+        userProfile = JSON.parse(userProfileString);
+      } catch (e) {
+        setError("Invalid user profile stored locally");
+        return;
+      }
+      const { data, error } = await supabase
+        .from("users_followed_ideas")
+        .select("idea:idea_id(*)")
+        .eq("user_id", userProfile?.id);
+      if (error) {
+        setError(error.message);
+      } else {
+        // console.log(data, "this is the data");
+        // Extract the idea objects from the nested structure
+        const followedIdeas = data?.map((item: any) => item.idea).flat() ?? [];
+        setFollowedIdeas(followedIdeas ?? []);
+        console.log(followedIdeas, "followed ideas");
+      }
+    }
+  };
+
+  // TODO - to implement
+  const handleFollow = async (
+    ideaId: string,
+    isCurrentlyFollowing: boolean
+  ) => {
+    try {
+      const userProfileString = await AsyncStorage.getItem("user");
+
+      if (userProfileString) {
+        let userProfile: { id?: string } | null = null;
+        try {
+          userProfile = JSON.parse(userProfileString);
+        } catch (e) {
+          setError("Invalid user profile stored locally");
+          return;
+        }
+        if (!isCurrentlyFollowing) {
+          const { data, error } = await supabase
+            .from("users_followed_ideas")
+            .insert({
+              user_id: userProfile?.id,
+              idea_id: ideaId,
+            });
+
+          if (error) {
+            console.error("Error following idea:", error);
+            setError(error.message);
+            return;
+          }
+          userFollowedIdeas();
+        } else {
+          const { error } = await supabase
+            .from("users_followed_ideas")
+            .delete()
+            .eq("user_id", userProfile?.id)
+            .eq("idea_id", ideaId);
+
+          if (error) {
+            console.error("Error following idea:", error);
+            setError(error.message);
+            return;
+          }
+          userFollowedIdeas();
+        }
+
+        return Promise.resolve();
+      }
+    } catch (error) {
+      console.error("Error in handleFollow:", error);
+    }
+  };
 
   const load = useCallback(async () => {
     setError(null);
@@ -58,12 +130,6 @@ export default function HomeScreen() {
         return;
       }
 
-      // if (profileError) {
-      //   setError(profileError.message);
-      //   setLoading(false);
-      //   return;
-      // }
-
       const { data, error } = await supabase
         .from("ideas")
         .select(
@@ -86,6 +152,7 @@ export default function HomeScreen() {
 
   useEffect(() => {
     load();
+    userFollowedIdeas();
   }, [load]);
 
   const onRefresh = async () => {
@@ -118,7 +185,7 @@ export default function HomeScreen() {
             onComment={() => {
               console.log("Comment on idea:", item.id);
             }}
-            initialIsFollowing={false}
+            initialIsFollowing={followedIdeas.some((i) => i.id === item.id)}
             onFollow={(isCurrentlyFollowing) =>
               handleFollow(item.id, isCurrentlyFollowing)
             }
