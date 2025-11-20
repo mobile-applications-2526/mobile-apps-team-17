@@ -5,6 +5,7 @@ import CustomBackIcon from "../assets/images/back-icon.png";
 import Splash from "../components/Splash";
 import "../global.css";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import PageHeader from "../components/PageHeader";
 
 const CustomLeftButton = () => {
   const router = useRouter();
@@ -87,16 +88,11 @@ export default function RootLayout() {
         options={{
           presentation: "modal",
           headerShown: true,
-          headerTitle: "Draft",
+          headerTitle: () => <PageHeader title="Draft" />,
           headerShadowVisible: false,
           headerBackVisible: false,
           headerStyle: {
             backgroundColor: "#ffffff",
-          },
-          headerTitleStyle: {
-            fontSize: 48,
-            fontWeight: "bold",
-            color: "#1877F2",
           },
           headerTitleAlign: "left",
         }}
