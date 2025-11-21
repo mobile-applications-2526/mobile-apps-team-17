@@ -11,9 +11,13 @@ import {
   Text,
   TouchableOpacity,
   View,
+  TextInput,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import AddIcon from "../../assets/images/add-icon.png";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Search from "../../assets/images/search-icon.png";
 
 // TODO - to implement
 const handleFollow = (ideaId: string, isCurrentlyFollowing: boolean) => {
@@ -28,6 +32,7 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
 
   const load = useCallback(async () => {
@@ -102,10 +107,23 @@ export default function HomeScreen() {
     return <Splash />;
   }
 
+  const filteredIdeas = ideas.filter((idea) => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return true;
+    return (
+      idea.description.toLowerCase().includes(q)
+    );
+  });
+
   return (
-    <View className="flex-1 bg-white">
+    <KeyboardAvoidingView
+      className="flex-1 bg-white"
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
+    >
+    <View className="flex-1">
       <FlatList
-        data={ideas}
+        data={filteredIdeas}
         keyExtractor={(item) => String(item.id)}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
@@ -134,6 +152,7 @@ export default function HomeScreen() {
             </Text>
           </View>
         }
+        keyboardShouldPersistTaps="handled"
       />
 
       <View className="absolute bottom-5 left-4 right-4">
@@ -147,8 +166,30 @@ export default function HomeScreen() {
             elevation: 5,
           }}
         >
+          <View className="flex-1 rounded-3xl border border-brand-blue bg-white justify-center mb-2">
+            <View className="flex-row items-center my-1 mx-2">
+              <View className="rounded-full items-center justify-center">
+                <Image
+                  source={Search}
+                  style={{ width: 22, height: 22 }}
+                  resizeMode="contain"
+                />
+              </View>
+
+              <TextInput
+                className="flex-1 text-center text-base font-sf-pro text-brand-blue pb-2"
+                placeholder="Search by keywords"
+                placeholderTextColor="#1876f25d"
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                autoCorrect={false}
+                autoCapitalize="none"
+              />
+            </View>
+          </View>
+
           <TouchableOpacity
-            className="bg-[#1877F2] rounded-2xl py-4 px-5 flex-row items-center justify-start"
+            className="bg-brand-blue rounded-2xl py-4 px-5 flex-row items-center justify-start"
             onPress={handleAddIdea}
             activeOpacity={0.8}
           >
@@ -163,5 +204,6 @@ export default function HomeScreen() {
         </View>
       </View>
     </View>
+    </KeyboardAvoidingView>
   );
 }
