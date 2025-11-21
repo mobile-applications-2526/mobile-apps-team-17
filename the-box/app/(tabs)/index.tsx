@@ -2,6 +2,7 @@ import IdeaCard from "@/components/IdeaCard";
 import Splash from "@/components/Splash";
 import { supabase } from "@/supabase";
 import { Idea } from "@/types/index";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import {
@@ -16,6 +17,7 @@ import {
   Platform,
 } from "react-native";
 import AddIcon from "../../assets/images/add-icon.png";
+import FunnelIcon from "../../assets/images/funnel-simple.png";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Search from "../../assets/images/search-icon.png";
 
@@ -29,11 +31,108 @@ const handleFollow = (ideaId: string, isCurrentlyFollowing: boolean) => {
 
 export default function HomeScreen() {
   const [ideas, setIdeas] = useState<Idea[]>([]);
+  const [followedIdeas, setFollowedIdeas] = useState<Idea[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [togglePage, setTogglePage] = useState<'all' | 'following'>('all');
+  const [unfollowingIds, setUnfollowingIds] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
+
+  const userFollowedIdeas = async () => {
+    const userProfileString = await AsyncStorage.getItem("user");
+
+    if (userProfileString) {
+      let userProfile: { id?: string } | null = null;
+      try {
+        userProfile = JSON.parse(userProfileString);
+      } catch (e) {
+        setError("Invalid user profile stored locally");
+        return;
+      }
+      const { data, error } = await supabase
+        .from("users_followed_ideas")
+        .select("idea:idea_id(*)")
+        .eq("user_id", userProfile?.id);
+      if (error) {
+        setError(error.message);
+      } else {
+        const followedIdeas = data?.map((item: any) => item.idea).flat() ?? [];
+        setFollowedIdeas(followedIdeas ?? []);
+      }
+    }
+  };
+
+  // TODO - to implement
+  const handleFollow = async (
+    ideaId: string,
+    isCurrentlyFollowing: boolean
+  ) => {
+    try {
+      const userProfileString = await AsyncStorage.getItem("user");
+
+      if (userProfileString) {
+        let userProfile: { id?: string } | null = null;
+        try {
+          userProfile = JSON.parse(userProfileString);
+        } catch (e) {
+          setError("Invalid user profile stored locally");
+          return;
+        }
+        if (!isCurrentlyFollowing) {
+          const { data, error } = await supabase
+            .from("users_followed_ideas")
+            .insert({
+              user_id: userProfile?.id,
+              idea_id: ideaId,
+            });
+
+          if (error) {
+            console.error("Error following idea:", error);
+            setError(error.message);
+            return;
+          }
+          userFollowedIdeas();
+        } else {
+          setUnfollowingIds(prev => new Set(prev).add(String(ideaId)));
+          
+          const { error } = await supabase
+            .from("users_followed_ideas")
+            .delete()
+            .eq("user_id", userProfile?.id)
+            .eq("idea_id", ideaId);
+
+          if (error) {
+            console.error("Error following idea:", error);
+            setError(error.message);
+            setUnfollowingIds(prev => {
+              const newSet = new Set(prev);
+              newSet.delete(String(ideaId));
+              return newSet;
+            });
+            return;
+          }
+          
+          setFollowedIdeas(prev => prev.filter(idea => idea.id !== ideaId));
+          
+          setTimeout(() => {
+            setUnfollowingIds(prev => {
+              const newSet = new Set(prev);
+              newSet.delete(String(ideaId));
+              return newSet;
+            });
+          }, 300);
+          
+          userFollowedIdeas();
+        }
+
+        return Promise.resolve();
+      }
+    } catch (error) {
+      console.error("Error in handleFollow:", error);
+    }
+  };
 
   const load = useCallback(async () => {
     setError(null);
@@ -63,12 +162,6 @@ export default function HomeScreen() {
         return;
       }
 
-      // if (profileError) {
-      //   setError(profileError.message);
-      //   setLoading(false);
-      //   return;
-      // }
-
       const { data, error } = await supabase
         .from("ideas")
         .select(
@@ -91,6 +184,7 @@ export default function HomeScreen() {
 
   useEffect(() => {
     load();
+    userFollowedIdeas();
   }, [load]);
 
   const onRefresh = async () => {
@@ -116,13 +210,24 @@ export default function HomeScreen() {
   });
 
   return (
-    <KeyboardAvoidingView
+        <KeyboardAvoidingView
       className="flex-1 bg-white"
       behavior={Platform.OS === "ios" ? "padding" : undefined}
       keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
     >
     <View className="flex-1">
-      <FlatList
+      <View className=" w-full flex flex-row items-center pb-2 justify-center gap-2">
+          <TouchableOpacity className={`rounded-3xl ${togglePage === 'all' ? ' bg-brand-blue py-[0.6rem]' : 'bg-white border border-black py-2'} px-12`}  onPress={() => setTogglePage('all')}>
+            <Text className={`${togglePage === 'all' ? 'text-white' : 'text-black'}`}>All Posts</Text>
+          </TouchableOpacity>
+        <TouchableOpacity className={`rounded-3xl ${togglePage === 'following' ? ' bg-brand-blue py-[0.6rem]' : 'bg-white border border-black py-2'} px-12`} onPress={() => setTogglePage('following')}>
+            <Text className={`${togglePage === 'following' ? 'text-white' : 'text-black'}`}>Following</Text>
+          </TouchableOpacity>
+          <View className="border border-black rounded-full p-1">
+            <Image source={FunnelIcon} className="" style={{ width: 18, height: 18 }} resizeMode="contain" />
+          </View>
+      </View>
+      {togglePage === 'all' ? <FlatList
         data={filteredIdeas}
         keyExtractor={(item) => String(item.id)}
         refreshControl={
@@ -136,7 +241,7 @@ export default function HomeScreen() {
             onComment={() => {
               console.log("Comment on idea:", item.id);
             }}
-            initialIsFollowing={false}
+            initialIsFollowing={followedIdeas.some((i) => i.id === item.id)}
             onFollow={(isCurrentlyFollowing) =>
               handleFollow(item.id, isCurrentlyFollowing)
             }
@@ -153,7 +258,38 @@ export default function HomeScreen() {
           </View>
         }
         keyboardShouldPersistTaps="handled"
-      />
+      /> : <FlatList
+        data={followedIdeas.filter(idea => !unfollowingIds.has(String(idea.id)))}
+        keyExtractor={(item) => String(item.id)}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+        contentContainerStyle={{ paddingTop: 16, paddingBottom: 120 }}
+        showsVerticalScrollIndicator={true}
+        renderItem={({ item }) => (
+          <IdeaCard
+            idea={item}
+            onComment={() => {
+              console.log("Comment on idea:", item.id);
+            }}
+            initialIsFollowing={true}
+            onFollow={(isCurrentlyFollowing) =>
+              handleFollow(item.id, isCurrentlyFollowing)
+            }
+          />
+        )}
+        ListEmptyComponent={
+          <View className="items-center justify-center mt-[100px] px-10">
+            <Text className="text-xl font-semibold text-[#333] mb-2 text-center">
+              No followed ideas yet.
+            </Text>
+            {/* <Text className="text-base text-[#666] text-center">
+              Be the first to share an idea!
+            </Text> */}
+          </View>
+        }
+      />}
+      
 
       <View className="absolute bottom-5 left-4 right-4">
         <View

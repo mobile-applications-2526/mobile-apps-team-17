@@ -1,12 +1,12 @@
+import PageHeader from "@/components/PageHeader";
 import { supabase } from "@/supabase";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as Clipboard from 'expo-clipboard';
 import { Tabs, useRouter } from "expo-router";
+import { useEffect, useState } from "react";
 import { ActionSheetIOS, Image, Pressable } from "react-native";
 import LogoutIcon from "../../assets/images/logout-icon.png";
 import MoreIcon from "../../assets/images/more-icon.png";
-import { useEffect, useState } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import * as Clipboard from 'expo-clipboard';
-import PageHeader from "@/components/PageHeader";
 
 export default function TabLayout() {
   const router = useRouter();
