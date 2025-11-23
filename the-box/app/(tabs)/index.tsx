@@ -234,7 +234,9 @@ export default function HomeScreen() {
           now.getDate()
         );
         const startOfWeek = new Date(startOfToday);
-        startOfWeek.setDate(startOfToday.getDate() - startOfToday.getDay());
+        const day = startOfWeek.getDay();
+        const diff = (day === 0 ? 6 : day - 1);
+        startOfWeek.setDate(startOfWeek.getDate() - diff);
         const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
         const startOfYear = new Date(now.getFullYear(), 0, 1);
 
