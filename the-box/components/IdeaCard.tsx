@@ -53,6 +53,11 @@ const IdeaCard: React.FC<Props> = ({
     }
   };
 
+  const capitalizeStatus = (status: string) => {
+    if (!status) return "";
+    return status.charAt(0).toUpperCase() + status.slice(1);
+  };
+
   return (
     <View className="mx-4">
       <View className="bg-white rounded-[10px] border-[1.5px] border-brand-black p-3 mb-1">
@@ -68,7 +73,7 @@ const IdeaCard: React.FC<Props> = ({
       <View className="flex-row items-center gap-2">
         <View className="rounded-[10px] px-4 py-2.5 border-[1.5px] border-brand-black bg-white">
           <Text className="text-brand-blue text-sm font-semibold">
-            {idea.status}
+            {capitalizeStatus(idea.status)}
           </Text>
         </View>
 

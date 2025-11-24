@@ -161,6 +161,21 @@ export default function DiscussionScreen() {
         return;
       }
 
+      if (isManager) {
+        const { error: updateError } = await supabase
+          .from("ideas")
+          .update({ status: "commented by manager" })
+          .eq("id", id);
+
+        if (updateError) {
+          console.error("Error updating idea status:", updateError);
+        } else {
+          setIdea((prevIdea) =>
+            prevIdea ? { ...prevIdea, status: "commented by manager" } : null
+          );
+        }
+      }
+
       const newComment = {
         ...data[0],
         user_name: data[0].users?.full_name,
