@@ -466,11 +466,15 @@ export default function HomeScreen() {
         }
         contentContainerStyle={{ paddingTop: 16, paddingBottom: 120 }}
         showsVerticalScrollIndicator={true}
+        ItemSeparatorComponent={() => <View style={{ height: 29 }} />}
         renderItem={({ item }) => (
           <IdeaCard
             idea={item}
             onComment={() => {
-              console.log("Comment on idea:", item.id);
+              router.push({
+                pathname: "/discussion/[id]",
+                params: { id: item.id },
+              });
             }}
             initialIsFollowing={followedIdeas.some((i) => i.id === item.id)}
             onFollow={(isCurrentlyFollowing) =>
