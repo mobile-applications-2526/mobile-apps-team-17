@@ -311,7 +311,7 @@ export default function DiscussionScreen() {
       <View
         className="px-4 bg-white"
         style={{
-          position: "absolute",
+          // position: "absolute",
           bottom: 0,
           left: 0,
           right: 0,

@@ -5,6 +5,7 @@ import { Image, TouchableOpacity } from "react-native";
 import CustomBackIcon from "../assets/images/back-icon.png";
 import Splash from "../components/Splash";
 import "../global.css";
+import PageHeader from "@/components/PageHeader";
 
 const CustomLeftButton = () => {
   const router = useRouter();
