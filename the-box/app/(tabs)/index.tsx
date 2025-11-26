@@ -302,12 +302,12 @@ export default function HomeScreen() {
       keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
     >
       <View className="flex-1 mt-5">
-        <View className=" w-full flex flex-row items-center pb-2 justify-center gap-2">
-          <TouchableOpacity className={`rounded-3xl ${togglePage === 'all' ? ' bg-brand-blue py-[0.6rem]' : 'bg-white border border-black py-2'} px-12`}  onPress={() => setTogglePage('all')}>
-            <Text className={`${togglePage === 'all' ? 'text-white' : 'text-black'}`}>All Posts</Text>
+        <View className="w-full flex flex-row items-center pb-2 px-4 gap-2">
+          <TouchableOpacity className={`flex-1 rounded-3xl ${togglePage === 'all' ? 'bg-brand-blue py-[0.6rem]' : 'bg-white border border-black py-2'}`} onPress={() => setTogglePage('all')}>
+            <Text className={`text-center ${togglePage === 'all' ? 'text-white' : 'text-black'}`}>All Posts</Text>
           </TouchableOpacity>
-        <TouchableOpacity className={`rounded-3xl ${togglePage === 'following' ? ' bg-brand-blue py-[0.6rem]' : 'bg-white border border-black py-2'} px-12`} onPress={() => setTogglePage('following')}>
-            <Text className={`${togglePage === 'following' ? 'text-white' : 'text-black'}`}>Following</Text>
+          <TouchableOpacity className={`flex-1 rounded-3xl ${togglePage === 'following' ? 'bg-brand-blue py-[0.6rem]' : 'bg-white border border-black py-2'}`} onPress={() => setTogglePage('following')}>
+            <Text className={`text-center ${togglePage === 'following' ? 'text-white' : 'text-black'}`}>Following</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
