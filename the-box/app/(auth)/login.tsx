@@ -1,6 +1,7 @@
 import Input from "@/components/forms/Input";
 import { supabase } from "@/supabase";
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
@@ -12,7 +13,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -27,17 +27,17 @@ export default function LoginScreen() {
     setShowPassword(false);
     setEmail("");
     setPassword("");
-  }, []);
+  }, [role]);
 
   // TODO - not sure why after logging in, it jumps back to login page
   const handleEmployeeLogin = async () => {
     setLoading(true);
 
     const { data: codeRow, error: codeErr } = await supabase
-          .from("access_codes")
-          .select("*")
-          .eq("code", employeeLoginCode)
-          .single();
+      .from("access_codes")
+      .select("*")
+      .eq("code", employeeLoginCode)
+      .single();
 
     if (codeErr || !codeRow) {
       alert("Access code not found.");
@@ -56,9 +56,9 @@ export default function LoginScreen() {
       .select("*")
       .eq("id", codeRow.created_by)
       .single();
-    
+
     const { data: addEmployee, error } = await supabase
-      .from('users')
+      .from("users")
       .insert([
         {
           company_id: managerRow.company_id,
@@ -68,11 +68,11 @@ export default function LoginScreen() {
           created_at: new Date().toISOString(),
           last_login: null,
           is_active: true,
-          password: null
+          password: null,
         },
       ])
       .select();
-    
+
     // ensure a stable device id for this device (store it in AsyncStorage if missing)
     let device_id = "ABCD";
     if (!device_id) {
@@ -102,7 +102,12 @@ export default function LoginScreen() {
 
     console.log(addEmployee);
 
-    if (error || !addEmployee || !Array.isArray(addEmployee) || addEmployee.length === 0) {
+    if (
+      error ||
+      !addEmployee ||
+      !Array.isArray(addEmployee) ||
+      addEmployee.length === 0
+    ) {
       Alert.alert("Error", "Failed to create employee account");
       setLoading(false);
       return;
@@ -160,10 +165,6 @@ export default function LoginScreen() {
   const handleLogin =
     role === "employee" ? handleEmployeeLogin : handleManagerLogin;
 
-  const handlePasswordChange = (text: string) => {
-    setPassword(text);
-  };
-
   const handlePasswordBlur = () => {
     setShowPassword(false);
   };
@@ -178,6 +179,7 @@ export default function LoginScreen() {
         contentContainerStyle={{ flexGrow: 1, justifyContent: "center" }}
         className="bg-white px-5"
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
         <View className="mb-10">
           <Text className="text-xl font-bold text-brand-black mb-3 font-sf-pro">
@@ -235,7 +237,7 @@ export default function LoginScreen() {
                 <Input
                   placeholder="Password"
                   value={password}
-                  onChangeText={handlePasswordChange}
+                  onChangeText={setPassword}
                   onBlur={handlePasswordBlur}
                   secureTextEntry={!showPassword}
                   editable={!loading}
@@ -260,10 +262,12 @@ export default function LoginScreen() {
 
           {role === "employee" && (
             <View>
-              <Input 
+              <Input
                 placeholder="Enter code"
                 editable={!loading}
-                onChange={(e: { nativeEvent: { text: any; }; }) => setEmployeeLoginCode(e.nativeEvent.text)}
+                onChange={(e: { nativeEvent: { text: any } }) =>
+                  setEmployeeLoginCode(e.nativeEvent.text)
+                }
               />
 
               <TouchableOpacity
