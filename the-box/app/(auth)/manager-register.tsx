@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { supabase } from "../../supabase";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { isValidEmail, validatePassword } from "../../utils/validation";
 
 export default function ManagerRegisterScreen() {
   const router = useRouter();
@@ -43,21 +44,26 @@ export default function ManagerRegisterScreen() {
     });
 
     const newErrors: any = {};
-    if (!email.trim()) newErrors.email = "Email is required";
-    if (!password) newErrors.password = "Password is required";
+    if (!email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!isValidEmail(email)) {
+      newErrors.email = "Please enter a valid email address";
+    }
+
+    if (!password) {
+      newErrors.password = "Password is required";
+    } else {
+      const passwordValidation = validatePassword(password);
+      if (!passwordValidation.isValid) {
+        newErrors.password = passwordValidation.error;
+      }
+    }
+
     if (!fullName.trim()) newErrors.fullName = "Full name is required";
     if (!companyName.trim()) newErrors.companyName = "Company name is required";
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
-      return;
-    }
-
-    if (password.length < 8) {
-      setErrors((prev) => ({
-        ...prev,
-        password: "Password must be at least 8 characters",
-      }));
       return;
     }
 

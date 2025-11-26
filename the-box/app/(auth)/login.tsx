@@ -12,6 +12,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { isValidEmail } from "../../utils/validation";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -150,7 +151,12 @@ export default function LoginScreen() {
 
   const handleManagerLogin = async () => {
     const newErrors: any = {};
-    if (!email.trim()) newErrors.email = "Email is required";
+    if (!email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!isValidEmail(email)) {
+      newErrors.email = "Please enter a valid email address";
+    }
+
     if (!password) newErrors.password = "Password is required";
 
     if (Object.keys(newErrors).length > 0) {
