@@ -7,7 +7,7 @@ interface InputProps extends TextInputProps {
 
 export default function Input({ className = "", error, ...props }: InputProps) {
   const baseClassName =
-    "border-[1.5px] rounded-[10px] px-4 text-input font-sf-pro text-[17px] text-[#0E121A]";
+    "border rounded-[10px] px-4 text-input font-sf-pro text-[17px] text-[#0E121A]";
   const borderColor = error ? "border-red-500" : "border-brand-black";
   const marginBottom = error ? "mb-1" : "mb-3";
 

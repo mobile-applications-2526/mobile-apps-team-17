@@ -346,7 +346,7 @@ export default function DiscussionScreen() {
           {showCommentInput ? (
             <>
               <TextInput
-                className="bg-white border-[1.5px] border-brand-blue rounded-2xl px-4 py-3 mb-3 text-brand-black text-base min-h-[100px]"
+                className="bg-white border border-brand-blue rounded-2xl px-4 py-3 mb-3 text-brand-black text-base min-h-[100px]"
                 placeholder="Write your comment here..."
                 placeholderTextColor="#999"
                 multiline
@@ -375,7 +375,7 @@ export default function DiscussionScreen() {
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  className="bg-white border-[1.5px] border-brand-blue rounded-2xl py-4 px-5 flex-row items-center justify-center"
+                  className="bg-white border border-brand-blue rounded-2xl py-4 px-5 flex-row items-center justify-center"
                   onPress={handleCancelComment}
                   activeOpacity={0.8}
                 >

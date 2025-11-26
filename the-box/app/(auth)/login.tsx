@@ -227,7 +227,7 @@ export default function LoginScreen() {
               className={`flex-1 py-3 px-6 rounded-[10px] items-center ${
                 role === "employee"
                   ? "bg-brand-blue"
-                  : "border-[1.5px] border-gray-300"
+                  : "border border-gray-300"
               }`}
               onPress={() => setRole("employee")}
             >
@@ -245,7 +245,7 @@ export default function LoginScreen() {
               className={`flex-1 py-3 px-6 rounded-[10px] items-center ${
                 role === "manager"
                   ? "bg-brand-blue"
-                  : "border-[1.5px] border-gray-300"
+                  : "border border-gray-300"
               }`}
               onPress={() => setRole("manager")}
             >
@@ -370,7 +370,7 @@ export default function LoginScreen() {
               </TouchableOpacity>
 
               <TouchableOpacity
-                className="flex-1 border-[1.5px] border-brand-blue rounded-[10px] px-4 py-3 items-center"
+                className="flex-1 border border-brand-blue rounded-[10px] px-4 py-3 items-center"
                 onPress={() => router.push("/(auth)/manager-register")}
                 disabled={loading}
                 activeOpacity={0.8}
