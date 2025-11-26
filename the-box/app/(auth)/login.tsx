@@ -5,7 +5,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -21,16 +20,35 @@ export default function LoginScreen() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [employeeLoginCode, setEmployeeLoginCode] = useState(null);
+  const [employeeLoginCode, setEmployeeLoginCode] = useState<string>("");
+  const [errors, setErrors] = useState({
+    employeeCode: "",
+    email: "",
+    password: "",
+    auth: "",
+  });
 
   useEffect(() => {
     setShowPassword(false);
     setEmail("");
     setPassword("");
+    setErrors({
+      employeeCode: "",
+      email: "",
+      password: "",
+      auth: "",
+    });
   }, [role]);
 
-  // TODO - not sure why after logging in, it jumps back to login page
   const handleEmployeeLogin = async () => {
+    if (!employeeLoginCode || !employeeLoginCode.trim()) {
+      setErrors((prev) => ({
+        ...prev,
+        employeeCode: "Access code is required",
+      }));
+      return;
+    }
+
     setLoading(true);
 
     const { data: codeRow, error: codeErr } = await supabase
@@ -40,13 +58,16 @@ export default function LoginScreen() {
       .single();
 
     if (codeErr || !codeRow) {
-      alert("Access code not found.");
+      setErrors((prev) => ({ ...prev, employeeCode: "Invalid access code" }));
       setLoading(false);
       return;
     }
 
     if (codeRow.status !== "available") {
-      alert("Access code is used or expired.");
+      setErrors((prev) => ({
+        ...prev,
+        employeeCode: "This access code has already been used or expired",
+      }));
       setLoading(false);
       return;
     }
@@ -95,7 +116,10 @@ export default function LoginScreen() {
       .single();
 
     if (updateCodeErr || !updatedCode) {
-      Alert.alert("Error", "Failed to mark access code as used");
+      setErrors((prev) => ({
+        ...prev,
+        auth: "Authentication error. Please try again",
+      }));
       setLoading(false);
       return;
     }
@@ -108,7 +132,10 @@ export default function LoginScreen() {
       !Array.isArray(addEmployee) ||
       addEmployee.length === 0
     ) {
-      Alert.alert("Error", "Failed to create employee account");
+      setErrors((prev) => ({
+        ...prev,
+        auth: "Failed to create account. Please try again",
+      }));
       setLoading(false);
       return;
     }
@@ -121,10 +148,14 @@ export default function LoginScreen() {
     setLoading(false);
   };
 
-  // TODO - we shouldn't show alert, instead custom message (component? modal?)
   const handleManagerLogin = async () => {
-    if (!email || !password) {
-      return Alert.alert("Error", "Please enter email and password");
+    const newErrors: any = {};
+    if (!email.trim()) newErrors.email = "Email is required";
+    if (!password) newErrors.password = "Password is required";
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors((prev) => ({ ...prev, ...newErrors }));
+      return;
     }
 
     setLoading(true);
@@ -139,9 +170,9 @@ export default function LoginScreen() {
         .maybeSingle();
 
       if (userErr) throw userErr;
-      if (!userRow) throw new Error("Invalid email or password");
+      if (!userRow) throw new Error("auth_failed");
       if (userRow.role !== "manager") {
-        throw new Error("This login is for managers only");
+        throw new Error("auth_failed");
       }
 
       // update last_login
@@ -155,8 +186,7 @@ export default function LoginScreen() {
 
       router.replace("/(tabs)");
     } catch (e: any) {
-      // TODO - we shouldn't show alert, instead custom message (component? modal?)
-      Alert.alert("Login Failed", e.message ?? "Unknown error");
+      setErrors((prev) => ({ ...prev, auth: "Invalid email or password" }));
     } finally {
       setLoading(false);
     }
@@ -225,10 +255,21 @@ export default function LoginScreen() {
 
           {role === "manager" && (
             <View>
+              {errors.auth && (
+                <View className="mb-3 px-1">
+                  <Text className="text-red-500 text-sm font-sf-pro">
+                    {errors.auth}
+                  </Text>
+                </View>
+              )}
               <Input
                 placeholder="Email"
                 value={email}
-                onChangeText={setEmail}
+                onChangeText={(text: string) => {
+                  setEmail(text);
+                  setErrors((prev) => ({ ...prev, email: "", auth: "" }));
+                }}
+                error={errors.email}
                 autoCapitalize="none"
                 keyboardType="email-address"
                 editable={!loading}
@@ -237,8 +278,12 @@ export default function LoginScreen() {
                 <Input
                   placeholder="Password"
                   value={password}
-                  onChangeText={setPassword}
+                  onChangeText={(text: string) => {
+                    setPassword(text);
+                    setErrors((prev) => ({ ...prev, password: "", auth: "" }));
+                  }}
                   onBlur={handlePasswordBlur}
+                  error={errors.password}
                   secureTextEntry={!showPassword}
                   editable={!loading}
                   className="mb-0"
@@ -262,12 +307,26 @@ export default function LoginScreen() {
 
           {role === "employee" && (
             <View>
+              {errors.auth && (
+                <View className="mb-3 px-1">
+                  <Text className="text-red-500 text-sm font-sf-pro">
+                    {errors.auth}
+                  </Text>
+                </View>
+              )}
               <Input
                 placeholder="Enter code"
+                value={employeeLoginCode}
+                onChangeText={(text: string) => {
+                  setEmployeeLoginCode(text);
+                  setErrors((prev) => ({
+                    ...prev,
+                    employeeCode: "",
+                    auth: "",
+                  }));
+                }}
+                error={errors.employeeCode}
                 editable={!loading}
-                onChange={(e: { nativeEvent: { text: any } }) =>
-                  setEmployeeLoginCode(e.nativeEvent.text)
-                }
               />
 
               <TouchableOpacity
