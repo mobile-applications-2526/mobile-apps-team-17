@@ -37,6 +37,7 @@ export default function HomeScreen() {
   const [error, setError] = useState<string | null>(null);
   const [togglePage, setTogglePage] = useState<'all' | 'following'>('all');
   const [unfollowingIds, setUnfollowingIds] = useState<Set<string>>(new Set());
+  const [isManager, setIsManager] = useState(false);
   const router = useRouter();
 
   type TimeFilter = "all" | "today" | "week" | "month" | "year";
@@ -175,6 +176,8 @@ export default function HomeScreen() {
         setLoading(false);
         return;
       }
+
+      setIsManager((userProfile as any).role === 'manager');
 
       const { data, error } = await supabase
         .from("ideas")
@@ -478,6 +481,7 @@ export default function HomeScreen() {
             renderItem={({ item }) => (
               <IdeaCard
                 idea={item}
+                isManager={isManager}
                 onComment={() => {
                   router.push({
                     pathname: "/discussion/[id]",
@@ -488,6 +492,20 @@ export default function HomeScreen() {
                 onFollow={(isCurrentlyFollowing) =>
                   handleFollow(item.id, isCurrentlyFollowing)
                 }
+                onChangeStatus={async (newStatus) => {
+                  const { error } = await supabase
+                    .from("ideas")
+                    .update({ status: newStatus })
+                    .eq("id", item.id);
+
+                  if (error) {
+                    throw error;
+                  }
+
+                  setIdeas(prev =>
+                    prev.map(i => i.id === item.id ? { ...i, status: newStatus } : i)
+                  );
+                }}
               />
             )}
             ListEmptyComponent={

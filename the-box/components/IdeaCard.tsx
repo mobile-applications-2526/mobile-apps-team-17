@@ -1,27 +1,36 @@
 import { Idea } from "@/types/index";
-import React, { useState } from "react";
-import { Image, Text, TouchableOpacity, View } from "react-native";
+import React, { useEffect, useState } from "react";
+import { Image, Modal, Text, TouchableOpacity, View } from "react-native";
 import BellActiveIcon from "../assets/images/bell-active-icon.png";
 import BellIcon from "../assets/images/bell-icon.png";
 import CommentActiveIcon from "../assets/images/comment-active-icon.png";
 import CommentIcon from "../assets/images/comment-icon.png";
+import DropdownIcon from "../assets/images/back-icon.png";
 
 type Props = {
   idea: Idea;
   initialIsFollowing: boolean;
   isCommentActive?: boolean;
+  isManager?: boolean;
   onComment?: () => void;
   onFollow?: (isCurrentlyFollowing: boolean) => Promise<void>;
+  onChangeStatus?: (newStatus: string) => Promise<void>;
 };
 
 const IdeaCard: React.FC<Props> = ({
   idea,
   initialIsFollowing,
   isCommentActive = false,
+  isManager = false,
   onComment,
   onFollow,
+  onChangeStatus,
 }) => {
   const [isFollowing, setIsFollowing] = useState(initialIsFollowing);
+  const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
+  const [isStatusModalVisible, setIsStatusModalVisible] = useState(false);
+  const [currentStatus, setCurrentStatus] = useState(idea.status);
+  const [pendingStatus, setPendingStatus] = useState<string | null>(null);
 
   const handleFollowPress = async () => {
     if (onFollow) {
@@ -53,14 +62,68 @@ const IdeaCard: React.FC<Props> = ({
     }
   };
 
+  const formatReviewDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const day = `${date.getDate()}`.padStart(2, "0");
+    const month = `${date.getMonth() + 1}`.padStart(2, "0");
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+
+  const reviewDate = formatReviewDate(
+    (idea as any).review_date ?? idea.created_at
+  );
+
+  useEffect(() => {
+    setCurrentStatus(idea.status);
+  }, [idea.status]);
+
   const capitalizeStatus = (status: string) => {
     if (!status) return "";
     return status.charAt(0).toUpperCase() + status.slice(1);
   };
 
+  const openStatusModal = (status: string ) => {
+    setPendingStatus(status);
+    setIsStatusDropdownOpen(false);
+    setIsStatusModalVisible(true);
+  }
+
+  const handleConfirmStatus = async () => {
+    if (!pendingStatus) {
+      setIsStatusModalVisible(false);
+      return;
+    }
+
+    const previousStatus = currentStatus;
+    const newStatus = pendingStatus;
+
+    setCurrentStatus(newStatus);
+    setIsStatusModalVisible(false);
+
+    if (onChangeStatus) {
+      try {
+        await onChangeStatus(newStatus);
+      } catch (error) {
+        console.error("Failed to change status:", error);
+        setCurrentStatus(previousStatus);
+      }
+    }
+    
+    setPendingStatus(null);
+  };
+
+  const handleCancelStatus = () => {
+    setPendingStatus(null);
+    setIsStatusModalVisible(false);
+  };
+
+  const displayPendingStatus = capitalizeStatus(pendingStatus || currentStatus);
+
   return (
+    <>
     <View className="mx-4">
-      <View className="bg-white rounded-[10px] border-[1.5px] border-brand-black p-3 mb-1">
+      <View className={`bg-white rounded-[10px] border-[1.5px] p-3 mb-1 ${currentStatus === 'accepted' ? 'border-brand-blue' : 'border-brand-black'}`}>
         <Text className="text-gray-500 text-xs mb-1">
           {formatDate(idea.created_at)}
         </Text>
@@ -71,10 +134,52 @@ const IdeaCard: React.FC<Props> = ({
       </View>
 
       <View className="flex-row items-center gap-2">
-        <View className="rounded-[10px] px-4 py-2.5 border-[1.5px] border-brand-black bg-white">
-          <Text className="text-brand-blue text-sm font-semibold">
-            {capitalizeStatus(idea.status)}
-          </Text>
+       <View className="relative">
+        <View className="rounded-[10px] border-[1.5px] border-brand-black bg-white">
+          <TouchableOpacity
+            className="flex-row items-center justify-between px-4 py-2.5"
+            onPress={() => isManager && setIsStatusDropdownOpen((prev) => !prev)}
+            activeOpacity={isManager ? 0.8 : 1}
+            disabled={!isManager}
+          >
+            <Text className="text-brand-blue text-sm font-semibold">
+              {currentStatus === 'accepted' || currentStatus === 'declined'
+                ? capitalizeStatus(currentStatus)
+                : `Review date: ${reviewDate}`}
+            </Text>
+            {isManager && (
+              <Image
+                source={DropdownIcon}
+                style={{
+                  width: 20,
+                  height: 20,
+                  marginLeft: 8,
+                  transform: [{ rotate: "-90deg" }],
+                }}
+                resizeMode="contain"
+              />
+            )}
+          </TouchableOpacity>
+          </View>
+
+          {isStatusDropdownOpen && (
+            <View className="absolute top-full left-0 right-0 bg-white border-[1.5px] border-t-[0px] border-brand-black rounded-[10px] z-10">
+              <TouchableOpacity
+                className="py-2 px-4"
+                onPress={() => openStatusModal("accepted")}
+                activeOpacity={0.8}
+              >
+                <Text className="text-brand-blue text-sm font-semibold">Accepted</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                className="py-2 px-4"
+                onPress={() => openStatusModal("declined")}
+                activeOpacity={0.8}
+              >
+                <Text className="text-brand-blue text-sm font-semibold">Declined</Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
 
         <View className="flex-1 flex-row gap-2">
@@ -118,6 +223,60 @@ const IdeaCard: React.FC<Props> = ({
         </View>
       </View>
     </View>
+    
+      <Modal
+        visible={isStatusModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={handleCancelStatus}
+      >
+        <View className="flex-1 bg-black/40 justify-center items-center">
+          <View className="w-9/12 bg-white rounded-[20px] p-5">
+            <Text className="text-center text-base font-semibold mb-4">
+              Changing this post&apos;s status
+            </Text>
+
+            <Text className="text-center text-brand-blue text-xl font-bold mb-2">
+              Review date: {reviewDate}
+            </Text>
+
+            <View className="items-center mb-2">
+              <Image
+                source={DropdownIcon}
+                style={{ width: 28, height: 28, transform: [{ rotate: "-90deg" }] }}
+                resizeMode="contain"
+              />
+            </View>
+
+            <Text className="text-center text-brand-blue text-xl font-bold mb-6">
+              {displayPendingStatus}
+            </Text>
+
+            <View className="flex-row justify-between gap-3">
+              <TouchableOpacity
+                className="flex-1 bg-brand-blue rounded-[16px] py-3 items-center"
+                onPress={handleConfirmStatus}
+                activeOpacity={0.8}
+              >
+                <Text className="text-white text-base font-semibold">
+                  Confirm
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                className="flex-1 border border-gray-400 rounded-[16px] py-3 items-center"
+                onPress={handleCancelStatus}
+                activeOpacity={0.8}
+              >
+                <Text className="text-gray-600 text-base font-semibold">
+                  Cancel
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+    </>
   );
 };
 
