@@ -8,17 +8,17 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   FlatList,
   Image,
-  RefreshControl,
-  Text,
-  TouchableOpacity,
-  View,
-  TextInput,
   KeyboardAvoidingView,
   Platform,
+  RefreshControl,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import AddIcon from "../../assets/images/add-icon.png";
-import FunnelIcon from "../../assets/images/funnel-simple.png";
 import FunnelIconActive from "../../assets/images/funnel-simple-2.png";
+import FunnelIcon from "../../assets/images/funnel-simple.png";
 import Search from "../../assets/images/search-icon.png";
 
 // TODO - to implement
@@ -35,7 +35,7 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [togglePage, setTogglePage] = useState<'all' | 'following'>('all');
+  const [togglePage, setTogglePage] = useState<"all" | "following">("all");
   const [unfollowingIds, setUnfollowingIds] = useState<Set<string>>(new Set());
   const router = useRouter();
 
@@ -109,7 +109,7 @@ export default function HomeScreen() {
           }
           userFollowedIdeas();
         } else {
-          setUnfollowingIds(prev => new Set(prev).add(String(ideaId)));
+          setUnfollowingIds((prev) => new Set(prev).add(String(ideaId)));
 
           const { error } = await supabase
             .from("users_followed_ideas")
@@ -120,7 +120,7 @@ export default function HomeScreen() {
           if (error) {
             console.error("Error following idea:", error);
             setError(error.message);
-            setUnfollowingIds(prev => {
+            setUnfollowingIds((prev) => {
               const newSet = new Set(prev);
               newSet.delete(String(ideaId));
               return newSet;
@@ -128,10 +128,10 @@ export default function HomeScreen() {
             return;
           }
 
-          setFollowedIdeas(prev => prev.filter(idea => idea.id !== ideaId));
+          setFollowedIdeas((prev) => prev.filter((idea) => idea.id !== ideaId));
 
           setTimeout(() => {
-            setUnfollowingIds(prev => {
+            setUnfollowingIds((prev) => {
               const newSet = new Set(prev);
               newSet.delete(String(ideaId));
               return newSet;
@@ -243,7 +243,7 @@ export default function HomeScreen() {
       );
       const startOfWeek = new Date(startOfToday);
       const day = startOfWeek.getDay();
-        const diff = (day === 0 ? 6 : day - 1);
+      const diff = day === 0 ? 6 : day - 1;
       startOfWeek.setDate(startOfWeek.getDate() - diff);
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
       const startOfYear = new Date(now.getFullYear(), 0, 1);
@@ -264,8 +264,8 @@ export default function HomeScreen() {
       );
     }
 
-      // status filter
-      if (statusFilter !== "all") {
+    // status filter
+    if (statusFilter !== "all") {
       filtered = filtered.filter((idea) => {
         if (statusFilter === "accepted") {
           return idea.status === "accepted";
@@ -302,21 +302,42 @@ export default function HomeScreen() {
       keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
     >
       <View className="flex-1 mt-5">
-        <View className=" w-full flex flex-row items-center pb-2 justify-center gap-2">
-          <TouchableOpacity className={`rounded-3xl ${togglePage === 'all' ? ' bg-brand-blue py-[0.6rem]' : 'bg-white border border-black py-2'} px-12`}  onPress={() => setTogglePage('all')}>
-            <Text className={`${togglePage === 'all' ? 'text-white' : 'text-black'}`}>All Posts</Text>
+        <View className="w-full flex flex-row items-center pb-2 px-4 gap-2">
+          <TouchableOpacity
+            className={`flex-1 rounded-3xl ${togglePage === "all" ? "bg-brand-blue py-[0.6rem]" : "bg-white border border-black py-2"}`}
+            onPress={() => setTogglePage("all")}
+          >
+            <Text
+              className={`text-center ${togglePage === "all" ? "text-white" : "text-black"}`}
+            >
+              All Posts
+            </Text>
           </TouchableOpacity>
-        <TouchableOpacity className={`rounded-3xl ${togglePage === 'following' ? ' bg-brand-blue py-[0.6rem]' : 'bg-white border border-black py-2'} px-12`} onPress={() => setTogglePage('following')}>
-            <Text className={`${togglePage === 'following' ? 'text-white' : 'text-black'}`}>Following</Text>
+          <TouchableOpacity
+            className={`flex-1 rounded-3xl ${togglePage === "following" ? "bg-brand-blue py-[0.6rem]" : "bg-white border-black border py-2"}`}
+            onPress={() => setTogglePage("following")}
+          >
+            <Text
+              className={`text-center ${togglePage === "following" ? "text-white" : "text-black"}`}
+            >
+              Following
+            </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             onPress={handleFilteringPress}
             className={`rounded-full p-2 border ${
-              isFilterActive || hasActiveFilters ? "bg-brand-blue border-brand-blue" : "bg-white border-black"}`}
+              isFilterActive || hasActiveFilters
+                ? "bg-brand-blue border-brand-blue"
+                : "bg-white border-black"
+            }`}
           >
             <Image
-              source={isFilterActive || hasActiveFilters ? FunnelIconActive : FunnelIcon}
+              source={
+                isFilterActive || hasActiveFilters
+                  ? FunnelIconActive
+                  : FunnelIcon
+              }
               style={{ width: 18, height: 18 }}
               resizeMode="contain"
             />
@@ -324,7 +345,7 @@ export default function HomeScreen() {
         </View>
 
         {isFilterActive && (
-          <View className="mx-4 mb-2 bg-white rounded-[10px] border-[1.5px] border-brand-black p-3">
+          <View className="mx-4 mb-2 bg-white rounded-[10px] border border-brand-black p-3">
             <View className="flex-row mb-2 items-center">
               <View className="flex-1 mr-2">
                 <View className="bg-brand-blue rounded-3xl px-4 py-2">
@@ -334,7 +355,7 @@ export default function HomeScreen() {
               <TouchableOpacity
                 className="flex-1 ml-2 border border-brand-blue rounded-3xl px-4 py-2 bg-white"
                 onPress={() => {
-                  setShowTimeDropdown(prev => !prev);
+                  setShowTimeDropdown((prev) => !prev);
                   setShowStatusDropdown(false);
                 }}
                 activeOpacity={0.8}
@@ -343,12 +364,12 @@ export default function HomeScreen() {
                   {timeFilter === "all"
                     ? "All dates"
                     : timeFilter === "today"
-                    ? "Today"
-                    : timeFilter === "week"
-                    ? "This Week"
-                    : timeFilter === "month"
-                    ? "This Month"
-                    : "This Year"}
+                      ? "Today"
+                      : timeFilter === "week"
+                        ? "This Week"
+                        : timeFilter === "month"
+                          ? "This Month"
+                          : "This Year"}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -356,12 +377,14 @@ export default function HomeScreen() {
               <View className="flex-row mb-3">
                 <View className="flex-1 mr-2" />
                 <View className="flex-1 ml-2 border border-brand-blue rounded-2xl overflow-hidden bg-white">
-                  {([
-                    ["today", "Today"],
-                    ["week", "This Week"],
-                    ["month", "This Month"],
-                    ["year", "This Year"],
-                  ] as const).map(([value, label]) => (
+                  {(
+                    [
+                      ["today", "Today"],
+                      ["week", "This Week"],
+                      ["month", "This Month"],
+                      ["year", "This Year"],
+                    ] as const
+                  ).map(([value, label]) => (
                     <TouchableOpacity
                       key={value}
                       className="py-2"
@@ -370,7 +393,9 @@ export default function HomeScreen() {
                         setShowTimeDropdown(false);
                       }}
                     >
-                      <Text className="text-center text-brand-blue">{label}</Text>
+                      <Text className="text-center text-brand-blue">
+                        {label}
+                      </Text>
                     </TouchableOpacity>
                   ))}
                 </View>
@@ -386,7 +411,7 @@ export default function HomeScreen() {
               <TouchableOpacity
                 className="flex-1 ml-2 border border-brand-blue rounded-3xl px-4 py-2 bg-white"
                 onPress={() => {
-                  setShowStatusDropdown(prev => !prev);
+                  setShowStatusDropdown((prev) => !prev);
                   setShowTimeDropdown(false);
                 }}
                 activeOpacity={0.8}
@@ -395,12 +420,12 @@ export default function HomeScreen() {
                   {statusFilter === "all"
                     ? "All"
                     : statusFilter === "accepted"
-                    ? "Accepted"
-                    : statusFilter === "declined"
-                    ? "Declined"
-                    : statusFilter === "to_be_reviewed"
-                    ? "To be reviewed"
-                    : "Commented by manager"}
+                      ? "Accepted"
+                      : statusFilter === "declined"
+                        ? "Declined"
+                        : statusFilter === "to_be_reviewed"
+                          ? "To be reviewed"
+                          : "Commented by manager"}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -416,7 +441,9 @@ export default function HomeScreen() {
                       setShowStatusDropdown(false);
                     }}
                   >
-                    <Text className="text-center text-brand-blue">Accepted</Text>
+                    <Text className="text-center text-brand-blue">
+                      Accepted
+                    </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     className="py-2"
@@ -425,7 +452,9 @@ export default function HomeScreen() {
                       setShowStatusDropdown(false);
                     }}
                   >
-                    <Text className="text-center text-brand-blue">Declined</Text>
+                    <Text className="text-center text-brand-blue">
+                      Declined
+                    </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     className="py-2"
@@ -434,7 +463,9 @@ export default function HomeScreen() {
                       setShowStatusDropdown(false);
                     }}
                   >
-                    <Text className="text-center text-brand-blue">To be reviewed</Text>
+                    <Text className="text-center text-brand-blue">
+                      To be reviewed
+                    </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     className="py-2"
@@ -460,13 +491,12 @@ export default function HomeScreen() {
                 setShowStatusDropdown(false);
               }}
             >
-              <Text className="text-center text-gray-700">
-                Reset filters
-                </Text>
+              <Text className="text-center text-gray-700">Reset filters</Text>
             </TouchableOpacity>
           </View>
         )}
-        {togglePage === 'all' ? <FlatList
+        {togglePage === "all" ? (
+          <FlatList
             data={filteredIdeas}
             keyExtractor={(item) => String(item.id)}
             refreshControl={
@@ -501,8 +531,12 @@ export default function HomeScreen() {
               </View>
             }
             keyboardShouldPersistTaps="handled"
-          /> : <FlatList
-            data={followedIdeas.filter(idea => !unfollowingIds.has(String(idea.id)))}
+          />
+        ) : (
+          <FlatList
+            data={followedIdeas.filter(
+              (idea) => !unfollowingIds.has(String(idea.id))
+            )}
             keyExtractor={(item) => String(item.id)}
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
@@ -531,8 +565,8 @@ export default function HomeScreen() {
                 </Text> */}
               </View>
             }
-          />}
-
+          />
+        )}
 
         <View className="absolute bottom-5 left-4 right-4">
           <View

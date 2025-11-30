@@ -60,7 +60,7 @@ const IdeaCard: React.FC<Props> = ({
 
   return (
     <View className="mx-4">
-      <View className="bg-white rounded-[10px] border-[1.5px] border-brand-black p-3 mb-1">
+      <View className="bg-white rounded-[10px] border border-brand-black p-3 mb-1">
         <Text className="text-gray-500 text-xs mb-1">
           {formatDate(idea.created_at)}
         </Text>
@@ -71,7 +71,7 @@ const IdeaCard: React.FC<Props> = ({
       </View>
 
       <View className="flex-row items-center gap-2">
-        <View className="rounded-[10px] px-4 py-2.5 border-[1.5px] border-brand-black bg-white">
+        <View className="rounded-[10px] px-4 py-2.5 border border-brand-black bg-white">
           <Text className="text-brand-blue text-sm font-semibold">
             {capitalizeStatus(idea.status)}
           </Text>
@@ -79,7 +79,7 @@ const IdeaCard: React.FC<Props> = ({
 
         <View className="flex-1 flex-row gap-2">
           <View
-            className={`flex-1 border-[1.5px] rounded-[10px] ${
+            className={`flex-1 border rounded-[10px] ${
               isCommentActive
                 ? "border-brand-blue bg-brand-blue"
                 : "border-brand-black bg-white"
@@ -98,7 +98,7 @@ const IdeaCard: React.FC<Props> = ({
           </View>
 
           <View
-            className={`flex-1 border-[1.5px] rounded-[10px] ${
+            className={`flex-1 border rounded-[10px] ${
               isFollowing
                 ? "border-brand-blue bg-brand-blue"
                 : "border-brand-black bg-white"

@@ -38,7 +38,7 @@ export default function TabLayout() {
     try {
       // await supabase.auth.signOut();
       await AsyncStorage.removeItem("user");
-      router.push("/(auth)/login");
+      router.replace("/(auth)/login");
     } catch (err) {
       console.error("Logout failed:", err);
     }
