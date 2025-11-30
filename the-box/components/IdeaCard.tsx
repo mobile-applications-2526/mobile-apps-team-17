@@ -123,7 +123,7 @@ const IdeaCard: React.FC<Props> = ({
   return (
     <>
     <View className="mx-4">
-      <View className={`bg-white rounded-[10px] border-[1.5px] p-3 mb-1 ${currentStatus === 'accepted' ? 'border-brand-blue' : 'border-brand-black'}`}>
+      <View className={`bg-white rounded-[10px] border-[1.3px] p-3 mb-1 ${currentStatus === 'accepted' ? 'border-brand-blue' : 'border-brand-black'}`}>
         <Text className="text-gray-500 text-xs mb-1">
           {formatDate(idea.created_at)}
         </Text>
@@ -134,49 +134,52 @@ const IdeaCard: React.FC<Props> = ({
       </View>
 
       <View className="flex-row items-center gap-2">
-       <View className="relative">
-        <View className="rounded-[10px] border-[1.5px] border-brand-black bg-white">
+       <View className="relative w-3/5">
+        <View className="rounded-[10px] border-[1.3px] border-brand-black bg-white">
           <TouchableOpacity
-            className="flex-row items-center justify-between px-4 py-2.5"
+            className="flex-row items-center px-4 py-2.5"
             onPress={() => isManager && setIsStatusDropdownOpen((prev) => !prev)}
             activeOpacity={isManager ? 0.8 : 1}
             disabled={!isManager}
           >
-            <Text className="text-brand-blue text-sm font-semibold">
-              {currentStatus === 'accepted' || currentStatus === 'declined'
-                ? capitalizeStatus(currentStatus)
-                : `Review date: ${reviewDate}`}
-            </Text>
-            {isManager && (
-              <Image
-                source={DropdownIcon}
-                style={{
-                  width: 20,
-                  height: 20,
-                  marginLeft: 8,
-                  transform: [{ rotate: "-90deg" }],
-                }}
-                resizeMode="contain"
-              />
-            )}
+            <View className="flex-1 items-center">
+              <Text className="text-brand-blue text-sm font-semibold text-center">
+                {currentStatus === 'accepted' || currentStatus === 'declined'
+                  ? capitalizeStatus(currentStatus)
+                  : `Review date: ${reviewDate}`}
+              </Text>
+            </View>
+            <View className="w-[20px] items-center">
+              {isManager && (
+                <Image
+                  source={DropdownIcon}
+                  style={{
+                    width: 20,
+                    height: 20,
+                    marginLeft: 8,
+                    transform: [{ rotate: "-90deg" }],
+                  }}
+                />
+              )}
+            </View>
           </TouchableOpacity>
           </View>
 
           {isStatusDropdownOpen && (
-            <View className="absolute top-full left-0 right-0 bg-white border-[1.5px] border-t-[0px] border-brand-black rounded-[10px] z-10">
+            <View className="absolute top-full left-0 right-0 bg-white border-[1.3px] border-t-[0px] border-brand-black rounded-[10px] z-10">
               <TouchableOpacity
                 className="py-2 px-4"
                 onPress={() => openStatusModal("accepted")}
                 activeOpacity={0.8}
               >
-                <Text className="text-brand-blue text-sm font-semibold">Accepted</Text>
+                <Text className="text-brand-blue text-sm font-semibold text-center">Accepted</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 className="py-2 px-4"
                 onPress={() => openStatusModal("declined")}
                 activeOpacity={0.8}
               >
-                <Text className="text-brand-blue text-sm font-semibold">Declined</Text>
+                <Text className="text-brand-blue text-sm font-semibold text-center">Declined</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -184,7 +187,7 @@ const IdeaCard: React.FC<Props> = ({
 
         <View className="flex-1 flex-row gap-2">
           <View
-            className={`flex-1 border-[1.5px] rounded-[10px] ${
+            className={`flex-1 border-[1.3px] rounded-[10px] ${
               isCommentActive
                 ? "border-brand-blue bg-brand-blue"
                 : "border-brand-black bg-white"
@@ -203,7 +206,7 @@ const IdeaCard: React.FC<Props> = ({
           </View>
 
           <View
-            className={`flex-1 border-[1.5px] rounded-[10px] ${
+            className={`flex-1 border-[1.3px] rounded-[10px] ${
               isFollowing
                 ? "border-brand-blue bg-brand-blue"
                 : "border-brand-black bg-white"
@@ -237,7 +240,7 @@ const IdeaCard: React.FC<Props> = ({
             </Text>
 
             <Text className="text-center text-brand-blue text-xl font-bold mb-2">
-              Review date: {reviewDate}
+              {currentStatus !== `accepted` && currentStatus !== `declined` ? `Review date: ${reviewDate}` : capitalizeStatus(currentStatus)}
             </Text>
 
             <View className="items-center mb-2">
