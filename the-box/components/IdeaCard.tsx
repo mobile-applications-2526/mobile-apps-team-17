@@ -1,5 +1,5 @@
 import { Idea } from "@/types/index";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Image, Text, TouchableOpacity, View } from "react-native";
 import BellActiveIcon from "../assets/images/bell-active-icon.png";
 import BellIcon from "../assets/images/bell-icon.png";
@@ -22,6 +22,11 @@ const IdeaCard: React.FC<Props> = ({
   onFollow,
 }) => {
   const [isFollowing, setIsFollowing] = useState(initialIsFollowing);
+
+
+  useEffect(() => {
+    setIsFollowing(initialIsFollowing);
+  }, [initialIsFollowing]);
 
   const handleFollowPress = async () => {
     if (onFollow) {
