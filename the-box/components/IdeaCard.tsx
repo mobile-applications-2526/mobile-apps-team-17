@@ -119,7 +119,10 @@ const IdeaCard: React.FC<Props> = ({
   };
 
   const displayPendingStatus = capitalizeStatus(pendingStatus || currentStatus);
-
+  const statusOptions = ["accepted", "declined"].filter(
+    (status) => status !== currentStatus
+  );
+  
   return (
     <>
     <View className="mx-4">
@@ -167,20 +170,18 @@ const IdeaCard: React.FC<Props> = ({
 
           {isStatusDropdownOpen && (
             <View className="absolute top-full left-0 right-0 bg-white border-[1.3px] border-t-[0px] border-brand-black rounded-[10px] z-10">
-              <TouchableOpacity
-                className="py-2 px-4"
-                onPress={() => openStatusModal("accepted")}
-                activeOpacity={0.8}
-              >
-                <Text className="text-brand-blue text-sm font-semibold text-center">Accepted</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                className="py-2 px-4"
-                onPress={() => openStatusModal("declined")}
-                activeOpacity={0.8}
-              >
-                <Text className="text-brand-blue text-sm font-semibold text-center">Declined</Text>
-              </TouchableOpacity>
+              {statusOptions.map((statusOption) => (
+                <TouchableOpacity
+                  key={statusOption}
+                  className="py-2 px-4"
+                  onPress={() => openStatusModal(statusOption)}
+                  activeOpacity={0.8}
+                >
+                  <Text className="text-brand-blue text-sm font-semibold text-center">
+                    {capitalizeStatus(statusOption)}
+                  </Text>
+                </TouchableOpacity>
+              ))}
             </View>
           )}
         </View>
