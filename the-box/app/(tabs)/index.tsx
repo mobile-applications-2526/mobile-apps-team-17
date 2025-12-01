@@ -21,14 +21,6 @@ import FunnelIconActive from "../../assets/images/funnel-simple-2.png";
 import FunnelIcon from "../../assets/images/funnel-simple.png";
 import Search from "../../assets/images/search-icon.png";
 
-// TODO - to implement
-const handleFollow = (ideaId: string, isCurrentlyFollowing: boolean) => {
-  console.log(
-    `Idea ${ideaId} follow status toggled to ${!isCurrentlyFollowing}`
-  );
-  return Promise.resolve();
-};
-
 export default function HomeScreen() {
   const [ideas, setIdeas] = useState<Idea[]>([]);
   const [followedIdeas, setFollowedIdeas] = useState<Idea[]>([]);
@@ -72,8 +64,12 @@ export default function HomeScreen() {
       if (error) {
         setError(error.message);
       } else {
-        const followedIdeas = data?.map((item: any) => item.idea).flat() ?? [];
-        setFollowedIdeas(followedIdeas ?? []);
+        const followedIdeasRaw = data?.map((item: any) => item.idea).flat() ?? [];
+        const uniqueFollowedIdeas = followedIdeasRaw.filter(
+          (idea: Idea, index: number, self: Idea[]) =>
+            index === self.findIndex((i) => i.id === idea.id)
+        );
+        setFollowedIdeas(uniqueFollowedIdeas);
       }
     }
   };
@@ -95,6 +91,11 @@ export default function HomeScreen() {
           return;
         }
         if (!isCurrentlyFollowing) {
+          const isAlreadyFollowing = followedIdeas.some((idea) => idea.id === ideaId);
+          if (isAlreadyFollowing) {
+            return;
+          }
+
           const { data, error } = await supabase
             .from("users_followed_ideas")
             .insert({
@@ -543,6 +544,7 @@ export default function HomeScreen() {
             }
             contentContainerStyle={{ paddingTop: 16, paddingBottom: 120 }}
             showsVerticalScrollIndicator={true}
+            ItemSeparatorComponent={() => <View style={{ height: 29 }} />}
             renderItem={({ item }) => (
               <IdeaCard
                 idea={item}
