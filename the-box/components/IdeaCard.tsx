@@ -1,5 +1,5 @@
 import { Idea } from "@/types/index";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Image, Text, TouchableOpacity, View } from "react-native";
 import BellActiveIcon from "../assets/images/bell-active-icon.png";
 import BellIcon from "../assets/images/bell-icon.png";
@@ -23,6 +23,11 @@ const IdeaCard: React.FC<Props> = ({
 }) => {
   const [isFollowing, setIsFollowing] = useState(initialIsFollowing);
 
+
+  useEffect(() => {
+    setIsFollowing(initialIsFollowing);
+  }, [initialIsFollowing]);
+
   const handleFollowPress = async () => {
     if (onFollow) {
       const newState = !isFollowing;
@@ -41,16 +46,16 @@ const IdeaCard: React.FC<Props> = ({
     const date = new Date(dateString);
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
+    const diffMinutes = Math.floor(diffMs / (1000 * 60));
     const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-    if (diffHours < 24) {
-      return `${diffHours}h ago`;
-    } else if (diffDays === 1) {
-      return "1 day ago";
-    } else {
+    if (diffMinutes < 1) return "Now";
+    if (diffHours < 1) return `${diffMinutes}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays === 1) return "1 day ago";
+    
       return `${diffDays} days ago`;
-    }
   };
 
   const capitalizeStatus = (status: string) => {
