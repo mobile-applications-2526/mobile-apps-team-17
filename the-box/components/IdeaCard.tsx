@@ -123,7 +123,7 @@ const IdeaCard: React.FC<Props> = ({
   return (
     <>
     <View className="mx-4">
-      <View className={`bg-white rounded-[10px] border-[1.3px] p-3 mb-1 ${currentStatus === 'accepted' ? 'border-brand-blue' : 'border-brand-black'}`}>
+      <View className={`bg-white rounded-[10px] border-[1.3px] p-3 mb-1 border-brand-black`}>
         <Text className="text-gray-500 text-xs mb-1">
           {formatDate(idea.created_at)}
         </Text>
