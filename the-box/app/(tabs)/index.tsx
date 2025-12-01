@@ -1,11 +1,13 @@
+import CustomDropdown from "@/components/DropdownMenu";
 import IdeaCard from "@/components/IdeaCard";
 import Splash from "@/components/Splash";
 import { supabase } from "@/supabase";
 import { Idea } from "@/types/index";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  Animated,
   FlatList,
   Image,
   KeyboardAvoidingView,
@@ -17,6 +19,7 @@ import {
   View,
 } from "react-native";
 import AddIcon from "../../assets/images/add-icon.png";
+import BackIcon from "../../assets/images/back-icon.png";
 import FunnelIconActive from "../../assets/images/funnel-simple-2.png";
 import FunnelIcon from "../../assets/images/funnel-simple.png";
 import Search from "../../assets/images/search-icon.png";
@@ -38,6 +41,14 @@ export default function HomeScreen() {
   const [togglePage, setTogglePage] = useState<"all" | "following">("all");
   const [unfollowingIds, setUnfollowingIds] = useState<Set<string>>(new Set());
   const router = useRouter();
+  const [timeFilter, setTimeFilter] = useState<TimeFilter>("all");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isFilterActive, setIsFilterActive] = useState(false);
+  const [isTimeDropdownOpen, setIsTimeDropdownOpen] = useState(false);
+  const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
+
+  const slideAnim = useRef(new Animated.Value(0)).current;
 
   type TimeFilter = "all" | "today" | "week" | "month" | "year";
   type StatusFilter =
@@ -46,13 +57,6 @@ export default function HomeScreen() {
     | "declined"
     | "to_be_reviewed"
     | "commented_by_manager";
-
-  const [timeFilter, setTimeFilter] = useState<TimeFilter>("all");
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [isFilterActive, setIsFilterActive] = useState(false);
-  const [showTimeDropdown, setShowTimeDropdown] = useState(false);
-  const [showStatusDropdown, setShowStatusDropdown] = useState(false);
 
   const userFollowedIdeas = async () => {
     const userProfileString = await AsyncStorage.getItem("user");
@@ -217,9 +221,17 @@ export default function HomeScreen() {
     setIsFilterActive(newState);
 
     if (!newState) {
-      setShowTimeDropdown(false);
-      setShowStatusDropdown(false);
+      setIsTimeDropdownOpen(false);
+      setIsStatusDropdownOpen(false);
     }
+
+    Animated.spring(slideAnim, {
+      toValue: newState ? 1 : 0,
+      useNativeDriver: true,
+      tension: 50,
+      friction: 8,
+      velocity: 1,
+    }).start();
   };
 
   const hasActiveFilters = useMemo(() => {
@@ -302,199 +314,154 @@ export default function HomeScreen() {
       keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
     >
       <View className="flex-1 mt-5">
-        <View className="w-full flex flex-row items-center pb-2 px-4 gap-2">
-          <TouchableOpacity
-            className={`flex-1 rounded-3xl ${togglePage === "all" ? "bg-brand-blue py-[0.6rem]" : "bg-white border border-black py-2"}`}
-            onPress={() => setTogglePage("all")}
+        <View
+          className="w-full flex flex-row items-center pb-2 px-4 gap-2"
+          style={{ zIndex: 1000 }}
+        >
+          <Animated.View
+            className="flex-1 flex-row gap-2"
+            style={{
+              transform: [
+                {
+                  translateX: slideAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0, -400],
+                  }),
+                },
+              ],
+            }}
+            pointerEvents={isFilterActive ? "none" : "auto"}
           >
-            <Text
-              className={`text-center ${togglePage === "all" ? "text-white" : "text-black"}`}
+            <TouchableOpacity
+              className={`flex-1 rounded-3xl ${togglePage === "all" ? "bg-brand-blue py-[0.6rem]" : "bg-white border border-brand-black py-2"}`}
+              onPress={() => setTogglePage("all")}
             >
-              All Posts
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            className={`flex-1 rounded-3xl ${togglePage === "following" ? "bg-brand-blue py-[0.6rem]" : "bg-white border-black border py-2"}`}
-            onPress={() => setTogglePage("following")}
-          >
-            <Text
-              className={`text-center ${togglePage === "following" ? "text-white" : "text-black"}`}
+              <Text
+                className={`text-center font-medium ${togglePage === "all" ? "text-white" : "text-brand-black"}`}
+              >
+                All Posts
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              className={`flex-1 rounded-3xl ${togglePage === "following" ? "bg-brand-blue py-[0.6rem]" : "bg-white border-brand-black border py-2"}`}
+              onPress={() => setTogglePage("following")}
             >
-              Following
-            </Text>
-          </TouchableOpacity>
+              <Text
+                className={`text-center font-medium ${togglePage === "following" ? "text-white" : "text-brand-black"}`}
+              >
+                Following
+              </Text>
+            </TouchableOpacity>
+          </Animated.View>
 
-          <TouchableOpacity
-            onPress={handleFilteringPress}
-            className={`rounded-full p-2 border ${
-              isFilterActive || hasActiveFilters
-                ? "bg-brand-blue border-brand-blue"
-                : "bg-white border-black"
-            }`}
+          <Animated.View
+            style={{
+              transform: [
+                {
+                  translateX: slideAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0, -400],
+                  }),
+                },
+              ],
+            }}
+            pointerEvents={isFilterActive ? "none" : "auto"}
           >
-            <Image
-              source={
-                isFilterActive || hasActiveFilters
-                  ? FunnelIconActive
-                  : FunnelIcon
-              }
-              style={{ width: 18, height: 18 }}
-              resizeMode="contain"
-            />
-          </TouchableOpacity>
+            <TouchableOpacity
+              onPress={handleFilteringPress}
+              className={`rounded-full p-2 border ${
+                hasActiveFilters
+                  ? "bg-brand-blue border-brand-blue"
+                  : "bg-white border-black"
+              }`}
+            >
+              <Image
+                source={hasActiveFilters ? FunnelIconActive : FunnelIcon}
+                style={{ width: 18, height: 18 }}
+                resizeMode="contain"
+              />
+            </TouchableOpacity>
+          </Animated.View>
+
+          <Animated.View
+            className="flex-row gap-2 absolute left-4 right-4"
+            style={{
+              transform: [
+                {
+                  translateX: slideAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [400, 0],
+                  }),
+                },
+              ],
+              zIndex: 1000,
+            }}
+            pointerEvents={isFilterActive ? "auto" : "none"}
+          >
+            <TouchableOpacity
+              onPress={handleFilteringPress}
+              className="justify-center items-center"
+            >
+              <Image
+                source={BackIcon}
+                style={{ width: 30, height: 30 }}
+                resizeMode="contain"
+              />
+            </TouchableOpacity>
+
+            <View className="flex-1">
+              <CustomDropdown
+                options={[
+                  { label: "All Dates", value: "all" },
+                  { label: "Today", value: "today" },
+                  { label: "This Week", value: "week" },
+                  { label: "This Month", value: "month" },
+                  { label: "This Year", value: "year" },
+                ]}
+                selectedValue={timeFilter}
+                onValueChange={(value) => {
+                  setTimeFilter(value as TimeFilter);
+                }}
+                placeholder="Select Date..."
+                isOpen={isTimeDropdownOpen}
+                onToggle={() => {
+                  setIsTimeDropdownOpen(!isTimeDropdownOpen);
+                  if (!isTimeDropdownOpen) {
+                    setIsStatusDropdownOpen(false);
+                  }
+                }}
+              />
+            </View>
+
+            <View className="flex-1">
+              <CustomDropdown
+                options={[
+                  { label: "All Status", value: "all" },
+                  { label: "Accepted", value: "accepted" },
+                  { label: "Declined", value: "declined" },
+                  { label: "To be reviewed", value: "to_be_reviewed" },
+                  {
+                    label: "Commented by manager",
+                    value: "commented_by_manager",
+                  },
+                ]}
+                selectedValue={statusFilter}
+                onValueChange={(value) => {
+                  setStatusFilter(value as StatusFilter);
+                }}
+                placeholder="Select Status..."
+                isOpen={isStatusDropdownOpen}
+                onToggle={() => {
+                  setIsStatusDropdownOpen(!isStatusDropdownOpen);
+                  if (!isStatusDropdownOpen) {
+                    setIsTimeDropdownOpen(false);
+                  }
+                }}
+              />
+            </View>
+          </Animated.View>
         </View>
 
-        {isFilterActive && (
-          <View className="mx-4 mb-2 bg-white rounded-[10px] border border-brand-black p-3">
-            <View className="flex-row mb-2 items-center">
-              <View className="flex-1 mr-2">
-                <View className="bg-brand-blue rounded-3xl px-4 py-2">
-                  <Text className="text-white text-center">Time</Text>
-                </View>
-              </View>
-              <TouchableOpacity
-                className="flex-1 ml-2 border border-brand-blue rounded-3xl px-4 py-2 bg-white"
-                onPress={() => {
-                  setShowTimeDropdown((prev) => !prev);
-                  setShowStatusDropdown(false);
-                }}
-                activeOpacity={0.8}
-              >
-                <Text className="text-brand-blue font-bold text-center">
-                  {timeFilter === "all"
-                    ? "All dates"
-                    : timeFilter === "today"
-                      ? "Today"
-                      : timeFilter === "week"
-                        ? "This Week"
-                        : timeFilter === "month"
-                          ? "This Month"
-                          : "This Year"}
-                </Text>
-              </TouchableOpacity>
-            </View>
-            {showTimeDropdown && (
-              <View className="flex-row mb-3">
-                <View className="flex-1 mr-2" />
-                <View className="flex-1 ml-2 border border-brand-blue rounded-2xl overflow-hidden bg-white">
-                  {(
-                    [
-                      ["today", "Today"],
-                      ["week", "This Week"],
-                      ["month", "This Month"],
-                      ["year", "This Year"],
-                    ] as const
-                  ).map(([value, label]) => (
-                    <TouchableOpacity
-                      key={value}
-                      className="py-2"
-                      onPress={() => {
-                        setTimeFilter(value);
-                        setShowTimeDropdown(false);
-                      }}
-                    >
-                      <Text className="text-center text-brand-blue">
-                        {label}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              </View>
-            )}
-
-            <View className="flex-row mb-2 items-center">
-              <View className="flex-1 mr-2">
-                <View className="bg-brand-blue rounded-3xl px-4 py-2">
-                  <Text className="text-white text-center">Status</Text>
-                </View>
-              </View>
-              <TouchableOpacity
-                className="flex-1 ml-2 border border-brand-blue rounded-3xl px-4 py-2 bg-white"
-                onPress={() => {
-                  setShowStatusDropdown((prev) => !prev);
-                  setShowTimeDropdown(false);
-                }}
-                activeOpacity={0.8}
-              >
-                <Text className="text-brand-blue font-bold text-center">
-                  {statusFilter === "all"
-                    ? "All"
-                    : statusFilter === "accepted"
-                      ? "Accepted"
-                      : statusFilter === "declined"
-                        ? "Declined"
-                        : statusFilter === "to_be_reviewed"
-                          ? "To be reviewed"
-                          : "Commented by manager"}
-                </Text>
-              </TouchableOpacity>
-            </View>
-
-            {showStatusDropdown && (
-              <View className="flex-row">
-                <View className="flex-1 mr-2" />
-                <View className="flex-1 ml-2 border border-brand-blue rounded-2xl overflow-hidden bg-white">
-                  <TouchableOpacity
-                    className="py-2"
-                    onPress={() => {
-                      setStatusFilter("accepted");
-                      setShowStatusDropdown(false);
-                    }}
-                  >
-                    <Text className="text-center text-brand-blue">
-                      Accepted
-                    </Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    className="py-2"
-                    onPress={() => {
-                      setStatusFilter("declined");
-                      setShowStatusDropdown(false);
-                    }}
-                  >
-                    <Text className="text-center text-brand-blue">
-                      Declined
-                    </Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    className="py-2"
-                    onPress={() => {
-                      setStatusFilter("to_be_reviewed");
-                      setShowStatusDropdown(false);
-                    }}
-                  >
-                    <Text className="text-center text-brand-blue">
-                      To be reviewed
-                    </Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    className="py-2"
-                    onPress={() => {
-                      setStatusFilter("commented_by_manager");
-                      setShowStatusDropdown(false);
-                    }}
-                  >
-                    <Text className="text-center text-brand-blue">
-                      Commented by manager
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            )}
-            <TouchableOpacity
-              className="mt-4 bg-white border border-black rounded-2xl py-2"
-              onPress={() => {
-                setTimeFilter("all");
-                setStatusFilter("all");
-                setSearchQuery("");
-                setShowTimeDropdown(false);
-                setShowStatusDropdown(false);
-              }}
-            >
-              <Text className="text-center text-gray-700">Reset filters</Text>
-            </TouchableOpacity>
-          </View>
-        )}
         {togglePage === "all" ? (
           <FlatList
             data={filteredIdeas}
@@ -560,9 +527,6 @@ export default function HomeScreen() {
                 <Text className="text-xl font-semibold text-[#333] mb-2 text-center">
                   No followed ideas yet.
                 </Text>
-                {/* <Text className="text-base text-[#666] text-center">
-                  Be the first to share an idea!
-                </Text> */}
               </View>
             }
           />
