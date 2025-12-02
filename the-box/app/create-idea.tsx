@@ -26,6 +26,10 @@ export default function CreateIdeaScreen() {
   const [description, setDescription] = useState("");
   const [department, setDepartment] = useState("");
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({
+    description: "", // for input field errors
+    general: "", // for other errors like system, etc
+  });
   const profanityFilter = new Filter();
 
   const getLastFriday =() => {
