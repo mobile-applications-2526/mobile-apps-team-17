@@ -38,7 +38,7 @@ export default function CreateIdeaScreen() {
       date.setDate(date.getDate() - 1);
     }
     return date;
-  }
+  };
 
   interface PredictResponse {
     prediction: string;
@@ -66,7 +66,7 @@ export default function CreateIdeaScreen() {
 
   const handleSubmit = async () => {
     if (!description.trim()) {
-      Alert.alert("Error", "You don't seem to have written anything...");
+      setErrors((prev) => ({ ...prev, description: "Please write your idea" }));
       return;
     }
 
@@ -89,7 +89,10 @@ export default function CreateIdeaScreen() {
       // read stored user profile from AsyncStorage
       const userString = await AsyncStorage.getItem("user");
       if (!userString) {
-        Alert.alert("Error", "Not authenticated");
+        setErrors((prev) => ({
+          ...prev,
+          general: "Authentication error. Please log in again",
+        }));
         setLoading(false);
         return;
       }
@@ -103,7 +106,7 @@ export default function CreateIdeaScreen() {
         subject: subject.trim() || null,
         department: department.trim() || null,
         description: description.trim(),
-        status: `Review date: ${lastFriday.toISOString().split('T')[0]}`,
+        status: `Review date: ${lastFriday.toISOString().split("T")[0]}`,
         created_by: storedUser.id,
         created_at: new Date().toISOString(),
       });
@@ -113,11 +116,14 @@ export default function CreateIdeaScreen() {
       Alert.alert("Success", "Your idea has been submitted!", [
         {
           text: "OK",
-          onPress: () => router.replace('/(tabs)'),
+          onPress: () => router.replace("/(tabs)"),
         },
       ]);
     } catch (err: any) {
-      Alert.alert("Error", err.message ?? "Failed to submit idea");
+      setErrors((prev) => ({
+        ...prev,
+        general: "Failed to submit idea. Please try again",
+      }));
     } finally {
       setLoading(false);
     }
@@ -154,6 +160,14 @@ export default function CreateIdeaScreen() {
         contentContainerStyle={{ paddingBottom: 150 }}
       >
         <View className="bg-white p-6">
+          {errors.general && (
+            <View className="mb-3 px-1">
+              <Text className="text-red-500 text-sm font-sf-pro">
+                {errors.general}
+              </Text>
+            </View>
+          )}
+
           <View className="mb-6">
             <Text className="text-xl font-bold text-brand-black mb-2 font-sf-pro">
               Topic (optional)
