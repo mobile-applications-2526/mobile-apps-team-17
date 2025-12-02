@@ -44,25 +44,25 @@ export default function CreateIdeaScreen() {
     prediction: string;
   }
 
-  const analyzeText = async (textToAnalyze: string): Promise<string | undefined> => {
-    try {
-      const response = await fetch('http://127.0.0.1:8000/predict', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ text: textToAnalyze }),
-      });
+  // const analyzeText = async (textToAnalyze: string): Promise<string | undefined> => {
+  //   try {
+  //     const response = await fetch('http://127.0.0.1:8000/predict', {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify({ text: textToAnalyze }),
+  //     });
 
-      const result = (await response.json()) as PredictResponse;
-      return result.prediction;
+  //     const result = (await response.json()) as PredictResponse;
+  //     return result.prediction;
 
-      // Set state with the result
+  //     // Set state with the result
 
-    } catch (error) {
-      console.error("Error calling custom API:", error);
-    }
-  };
+  //   } catch (error) {
+  //     console.error("Error calling custom API:", error);
+  //   }
+  // };
 
   const handleSubmit = async () => {
     if (!description.trim()) {
@@ -75,14 +75,14 @@ export default function CreateIdeaScreen() {
       return;
     };
     
-    const sentiment = await analyzeText(description);
+    // const sentiment = await analyzeText(description);
 
-    if (sentiment) {
-      Alert.alert(sentiment);
-      return;
-    } else {
-      Alert.alert("no sentiment check working");
-    }
+    // if (sentiment) {
+    //   Alert.alert(sentiment);
+    //   return;
+    // } else {
+    //   Alert.alert("no sentiment check working");
+    // }
 
     setLoading(true);
     try {
