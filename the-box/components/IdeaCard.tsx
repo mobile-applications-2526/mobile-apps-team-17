@@ -64,25 +64,31 @@ const IdeaCard: React.FC<Props> = ({
   };
 
   return (
-    <View className="mx-4">
+    <View className="flex-column gap-0.5 mx-4">
       <View className="bg-white rounded-[10px] border border-brand-black p-3 mb-1">
         <Text className="text-gray-500 text-xs mb-1">
           {formatDate(idea.created_at)}
         </Text>
+
+        {idea.subject && (
+          <Text className="text-brand-black text-lg font-semibold mb-1">
+            {idea.subject}
+          </Text>
+        )}
 
         <Text className="text-brand-black text-lg leading-5 mb-1">
           {idea.description}
         </Text>
       </View>
 
-      <View className="flex-row items-center gap-2">
+      <View className="flex-row items-center gap-1.5">
         <View className="rounded-[10px] px-4 py-2.5 border border-brand-black bg-white">
           <Text className="text-brand-blue text-sm font-semibold">
             {capitalizeStatus(idea.status)}
           </Text>
         </View>
 
-        <View className="flex-1 flex-row gap-2">
+        <View className="flex-1 flex-row gap-1.5">
           <View
             className={`flex-1 border rounded-[10px] ${
               isCommentActive
