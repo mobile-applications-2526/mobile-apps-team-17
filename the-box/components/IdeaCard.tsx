@@ -1,6 +1,6 @@
 import { Idea } from "@/types/index";
 import React, { useEffect, useState } from "react";
-import { Image, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Image, Text, TouchableOpacity, View } from "react-native";
 import BellActiveIcon from "../assets/images/bell-active-icon.png";
 import BellIcon from "../assets/images/bell-icon.png";
 import CommentActiveIcon from "../assets/images/comment-active-icon.png";
@@ -10,6 +10,7 @@ type Props = {
   idea: Idea;
   initialIsFollowing: boolean;
   isCommentActive?: boolean;
+  isFollowLoading?: boolean;
   onComment?: () => void;
   onFollow?: (isCurrentlyFollowing: boolean) => Promise<void>;
 };
@@ -18,6 +19,7 @@ const IdeaCard: React.FC<Props> = ({
   idea,
   initialIsFollowing,
   isCommentActive = false,
+  isFollowLoading = false,
   onComment,
   onFollow,
 }) => {
@@ -104,20 +106,27 @@ const IdeaCard: React.FC<Props> = ({
 
           <View
             className={`flex-1 border rounded-[10px] ${
-              isFollowing
-                ? "border-brand-blue bg-brand-blue"
-                : "border-brand-black bg-white"
+              isFollowLoading
+                ? "border-brand-black bg-white"
+                : isFollowing
+                  ? "border-brand-blue bg-brand-blue"
+                  : "border-brand-black bg-white"
             }`}
           >
             <TouchableOpacity
               className="flex-row items-center justify-center px-3 py-2"
               onPress={handleFollowPress}
               activeOpacity={0.7}
+              disabled={isFollowLoading}
             >
-              <Image
-                source={isFollowing ? BellActiveIcon : BellIcon}
-                style={{ width: 20, height: 20 }}
-              />
+              {isFollowLoading ? (
+                <ActivityIndicator size="small" color="#1877F2" />
+              ) : (
+                <Image
+                  source={isFollowing ? BellActiveIcon : BellIcon}
+                  style={{ width: 20, height: 20 }}
+                />
+              )}
             </TouchableOpacity>
           </View>
         </View>

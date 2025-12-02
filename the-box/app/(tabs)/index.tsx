@@ -3,7 +3,7 @@ import Splash from "@/components/Splash";
 import { supabase } from "@/supabase";
 import { Idea } from "@/types/index";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   FlatList,
@@ -201,6 +201,13 @@ export default function HomeScreen() {
     load();
     userFollowedIdeas();
   }, [load]);
+
+  // Refresh followed ideas when screen comes into focus (returning from discussion)
+  useFocusEffect(
+    useCallback(() => {
+      userFollowedIdeas();
+    }, [])
+  );
 
   const onRefresh = async () => {
     setRefreshing(true);
