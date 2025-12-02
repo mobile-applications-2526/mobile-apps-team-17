@@ -17,18 +17,18 @@ import ReturnIcon from "../assets/images/return-icon.png";
 import { supabase } from "../supabase";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+// Profanity filter
+import { Filter } from 'bad-words';
+
 export default function CreateIdeaScreen() {
   const router = useRouter();
   const [subject, setSubject] = useState("");
   const [description, setDescription] = useState("");
   const [department, setDepartment] = useState("");
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState({
-    description: "", // for input field errors
-    general: "", // for other errors like system, etc
-  });
+  const profanityFilter = new Filter();
 
-  const getLastFriday = () => {
+  const getLastFriday =() => {
     const today = new Date();
     const year = today.getFullYear();
     const month = today.getMonth();
@@ -40,11 +40,49 @@ export default function CreateIdeaScreen() {
     return date;
   };
 
+  interface PredictResponse {
+    prediction: string;
+  }
+
+  // const analyzeText = async (textToAnalyze: string): Promise<string | undefined> => {
+  //   try {
+  //     const response = await fetch('http://127.0.0.1:8000/predict', {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify({ text: textToAnalyze }),
+  //     });
+
+  //     const result = (await response.json()) as PredictResponse;
+  //     return result.prediction;
+
+  //     // Set state with the result
+
+  //   } catch (error) {
+  //     console.error("Error calling custom API:", error);
+  //   }
+  // };
+
   const handleSubmit = async () => {
     if (!description.trim()) {
       setErrors((prev) => ({ ...prev, description: "Please write your idea" }));
       return;
     }
+
+    if (profanityFilter.isProfane(description)) {
+      Alert.alert("Profanity languages are strictly prohibited");
+      return;
+    };
+    
+    // const sentiment = await analyzeText(description);
+
+    // if (sentiment) {
+    //   Alert.alert(sentiment);
+    //   return;
+    // } else {
+    //   Alert.alert("no sentiment check working");
+    // }
 
     setLoading(true);
     try {
@@ -60,19 +98,6 @@ export default function CreateIdeaScreen() {
       }
 
       const storedUser = JSON.parse(userString) as any;
-
-      // try to use company_id from stored profile; fall back to DB if missing
-      // let company_id = (storedUser as any).company_id ?? null;
-      // if (!company_id) {
-      //   const { data: userProfile, error: profileError } = await supabase
-      //     .from("users")
-      //     .select("company_id")
-      //     .eq("id", storedUser.id)
-      //     .single();
-
-      //   if (profileError) throw profileError;
-      //   company_id = (userProfile as any).company_id;
-      // }
 
       const lastFriday = getLastFriday();
 
@@ -163,15 +188,9 @@ export default function CreateIdeaScreen() {
             </Text>
             <Input
               value={description}
-              onChangeText={(text: string) => {
-                setDescription(text);
-                setErrors((prev) => ({
-                  ...prev,
-                  description: "",
-                  general: "",
-                }));
-              }}
-              error={errors.description}
+              onChangeText={
+                setDescription
+              }
               autoCapitalize="sentences"
               editable={!loading}
               style={{ height: 200 }}
