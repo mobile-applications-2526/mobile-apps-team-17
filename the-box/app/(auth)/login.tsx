@@ -1,10 +1,10 @@
 import Input from "@/components/forms/Input";
 import { supabase } from "@/supabase";
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -12,7 +12,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { isValidEmail } from "../../utils/validation";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -21,32 +21,54 @@ export default function LoginScreen() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [employeeLoginCode, setEmployeeLoginCode] = useState(null);
+  const [employeeLoginCode, setEmployeeLoginCode] = useState<string>("");
+  const [errors, setErrors] = useState({
+    employeeCode: "",
+    email: "",
+    password: "",
+    auth: "",
+  });
 
   useEffect(() => {
     setShowPassword(false);
     setEmail("");
     setPassword("");
-  }, []);
+    setErrors({
+      employeeCode: "",
+      email: "",
+      password: "",
+      auth: "",
+    });
+  }, [role]);
 
-  // TODO - not sure why after logging in, it jumps back to login page
   const handleEmployeeLogin = async () => {
+    if (!employeeLoginCode || !employeeLoginCode.trim()) {
+      setErrors((prev) => ({
+        ...prev,
+        employeeCode: "Access code is required",
+      }));
+      return;
+    }
+
     setLoading(true);
 
     const { data: codeRow, error: codeErr } = await supabase
-          .from("access_codes")
-          .select("*")
-          .eq("code", employeeLoginCode)
-          .single();
+      .from("access_codes")
+      .select("*")
+      .eq("code", employeeLoginCode)
+      .single();
 
     if (codeErr || !codeRow) {
-      alert("Access code not found.");
+      setErrors((prev) => ({ ...prev, employeeCode: "Invalid access code" }));
       setLoading(false);
       return;
     }
 
     if (codeRow.status !== "available") {
-      alert("Access code is used or expired.");
+      setErrors((prev) => ({
+        ...prev,
+        employeeCode: "This access code has already been used or expired",
+      }));
       setLoading(false);
       return;
     }
@@ -56,9 +78,9 @@ export default function LoginScreen() {
       .select("*")
       .eq("id", codeRow.created_by)
       .single();
-    
+
     const { data: addEmployee, error } = await supabase
-      .from('users')
+      .from("users")
       .insert([
         {
           company_id: managerRow.company_id,
@@ -68,11 +90,11 @@ export default function LoginScreen() {
           created_at: new Date().toISOString(),
           last_login: null,
           is_active: true,
-          password: null
+          password: null,
         },
       ])
       .select();
-    
+
     // ensure a stable device id for this device (store it in AsyncStorage if missing)
     let device_id = "ABCD";
     if (!device_id) {
@@ -95,15 +117,26 @@ export default function LoginScreen() {
       .single();
 
     if (updateCodeErr || !updatedCode) {
-      Alert.alert("Error", "Failed to mark access code as used");
+      setErrors((prev) => ({
+        ...prev,
+        auth: "Authentication error. Please try again",
+      }));
       setLoading(false);
       return;
     }
 
     console.log(addEmployee);
 
-    if (error || !addEmployee || !Array.isArray(addEmployee) || addEmployee.length === 0) {
-      Alert.alert("Error", "Failed to create employee account");
+    if (
+      error ||
+      !addEmployee ||
+      !Array.isArray(addEmployee) ||
+      addEmployee.length === 0
+    ) {
+      setErrors((prev) => ({
+        ...prev,
+        auth: "Failed to create account. Please try again",
+      }));
       setLoading(false);
       return;
     }
@@ -116,10 +149,19 @@ export default function LoginScreen() {
     setLoading(false);
   };
 
-  // TODO - we shouldn't show alert, instead custom message (component? modal?)
   const handleManagerLogin = async () => {
-    if (!email || !password) {
-      return Alert.alert("Error", "Please enter email and password");
+    const newErrors: any = {};
+    if (!email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!isValidEmail(email)) {
+      newErrors.email = "Please enter a valid email address";
+    }
+
+    if (!password) newErrors.password = "Password is required";
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors((prev) => ({ ...prev, ...newErrors }));
+      return;
     }
 
     setLoading(true);
@@ -134,9 +176,9 @@ export default function LoginScreen() {
         .maybeSingle();
 
       if (userErr) throw userErr;
-      if (!userRow) throw new Error("Invalid email or password");
+      if (!userRow) throw new Error("auth_failed");
       if (userRow.role !== "manager") {
-        throw new Error("This login is for managers only");
+        throw new Error("auth_failed");
       }
 
       // update last_login
@@ -150,8 +192,7 @@ export default function LoginScreen() {
 
       router.replace("/(tabs)");
     } catch (e: any) {
-      // TODO - we shouldn't show alert, instead custom message (component? modal?)
-      Alert.alert("Login Failed", e.message ?? "Unknown error");
+      setErrors((prev) => ({ ...prev, auth: "Invalid email or password" }));
     } finally {
       setLoading(false);
     }
@@ -159,10 +200,6 @@ export default function LoginScreen() {
 
   const handleLogin =
     role === "employee" ? handleEmployeeLogin : handleManagerLogin;
-
-  const handlePasswordChange = (text: string) => {
-    setPassword(text);
-  };
 
   const handlePasswordBlur = () => {
     setShowPassword(false);
@@ -178,6 +215,7 @@ export default function LoginScreen() {
         contentContainerStyle={{ flexGrow: 1, justifyContent: "center" }}
         className="bg-white px-5"
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
         <View className="mb-10">
           <Text className="text-xl font-bold text-brand-black mb-3 font-sf-pro">
@@ -189,7 +227,7 @@ export default function LoginScreen() {
               className={`flex-1 py-3 px-6 rounded-[10px] items-center ${
                 role === "employee"
                   ? "bg-brand-blue"
-                  : "border-[1.5px] border-gray-300"
+                  : "border border-gray-300"
               }`}
               onPress={() => setRole("employee")}
             >
@@ -207,7 +245,7 @@ export default function LoginScreen() {
               className={`flex-1 py-3 px-6 rounded-[10px] items-center ${
                 role === "manager"
                   ? "bg-brand-blue"
-                  : "border-[1.5px] border-gray-300"
+                  : "border border-gray-300"
               }`}
               onPress={() => setRole("manager")}
             >
@@ -223,10 +261,21 @@ export default function LoginScreen() {
 
           {role === "manager" && (
             <View>
+              {errors.auth && (
+                <View className="mb-3 px-1">
+                  <Text className="text-red-500 text-sm font-sf-pro">
+                    {errors.auth}
+                  </Text>
+                </View>
+              )}
               <Input
                 placeholder="Email"
                 value={email}
-                onChangeText={setEmail}
+                onChangeText={(text: string) => {
+                  setEmail(text);
+                  setErrors((prev) => ({ ...prev, email: "", auth: "" }));
+                }}
+                error={errors.email}
                 autoCapitalize="none"
                 keyboardType="email-address"
                 editable={!loading}
@@ -235,8 +284,12 @@ export default function LoginScreen() {
                 <Input
                   placeholder="Password"
                   value={password}
-                  onChangeText={handlePasswordChange}
+                  onChangeText={(text: string) => {
+                    setPassword(text);
+                    setErrors((prev) => ({ ...prev, password: "", auth: "" }));
+                  }}
                   onBlur={handlePasswordBlur}
+                  error={errors.password}
                   secureTextEntry={!showPassword}
                   editable={!loading}
                   className="mb-0"
@@ -260,10 +313,26 @@ export default function LoginScreen() {
 
           {role === "employee" && (
             <View>
-              <Input 
+              {errors.auth && (
+                <View className="mb-3 px-1">
+                  <Text className="text-red-500 text-sm font-sf-pro">
+                    {errors.auth}
+                  </Text>
+                </View>
+              )}
+              <Input
                 placeholder="Enter code"
+                value={employeeLoginCode}
+                onChangeText={(text: string) => {
+                  setEmployeeLoginCode(text);
+                  setErrors((prev) => ({
+                    ...prev,
+                    employeeCode: "",
+                    auth: "",
+                  }));
+                }}
+                error={errors.employeeCode}
                 editable={!loading}
-                onChange={(e: { nativeEvent: { text: any; }; }) => setEmployeeLoginCode(e.nativeEvent.text)}
               />
 
               <TouchableOpacity
@@ -301,7 +370,7 @@ export default function LoginScreen() {
               </TouchableOpacity>
 
               <TouchableOpacity
-                className="flex-1 border-[1.5px] border-brand-blue rounded-[10px] px-4 py-3 items-center"
+                className="flex-1 border border-brand-blue rounded-[10px] px-4 py-3 items-center"
                 onPress={() => router.push("/(auth)/manager-register")}
                 disabled={loading}
                 activeOpacity={0.8}
