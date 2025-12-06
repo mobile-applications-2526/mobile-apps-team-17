@@ -69,7 +69,12 @@ export default function HomeScreen() {
           (idea: Idea, index: number, self: Idea[]) =>
             index === self.findIndex((i) => i.id === idea.id)
         );
-        setFollowedIdeas(uniqueFollowedIdeas);
+        // sort
+        const sortedFollowedIdeas = uniqueFollowedIdeas.sort(
+          (a: Idea, b: Idea) =>
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+        setFollowedIdeas(sortedFollowedIdeas);
       }
     }
   };
