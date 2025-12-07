@@ -308,6 +308,8 @@ export default function HomeScreen() {
     return <Splash />;
   }
 
+  const bottomPadding = 160;
+
   return (
     <KeyboardAvoidingView
       className="flex-1 bg-white"
@@ -515,7 +517,10 @@ export default function HomeScreen() {
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
             }
-            contentContainerStyle={{ paddingTop: 16, paddingBottom: 120 }}
+            contentContainerStyle={{
+              paddingTop: 16,
+              paddingBottom: bottomPadding,
+            }}
             showsVerticalScrollIndicator={true}
             ItemSeparatorComponent={() => <View style={{ height: 29 }} />}
             renderItem={({ item }) => (
@@ -554,7 +559,10 @@ export default function HomeScreen() {
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
             }
-            contentContainerStyle={{ paddingTop: 16, paddingBottom: 120 }}
+            contentContainerStyle={{
+              paddingTop: 16,
+              paddingBottom: bottomPadding,
+            }}
             showsVerticalScrollIndicator={true}
             ItemSeparatorComponent={() => <View style={{ height: 29 }} />}
             renderItem={({ item }) => (
