@@ -246,6 +246,29 @@ export default function HomeScreen() {
     );
   }, [timeFilter, statusFilter, searchQuery]);
 
+  const updateIdeaStatus = async (ideaId: string, newStatus: string) => {
+    const { error } = await supabase
+      .from("ideas")
+      .update({ status: newStatus })
+      .eq("id", ideaId);
+
+    if (error) {
+      throw error;
+    }
+
+    setIdeas((prev) =>
+      prev.map((idea) =>
+        idea.id === ideaId ? { ...idea, status: newStatus } : idea
+      )
+    );
+
+    setFollowedIdeas((prev) =>
+      prev.map((idea) =>
+        idea.id === ideaId ? { ...idea, status: newStatus } : idea
+      )
+    );
+  };
+
   const filteredIdeas = useMemo(() => {
     let filtered = [...ideas];
 
@@ -535,20 +558,7 @@ export default function HomeScreen() {
                 onFollow={(isCurrentlyFollowing) =>
                   handleFollow(item.id, isCurrentlyFollowing)
                 }
-                onChangeStatus={async (newStatus) => {
-                  const { error } = await supabase
-                    .from("ideas")
-                    .update({ status: newStatus })
-                    .eq("id", item.id);
-
-                  if (error) {
-                    throw error;
-                  }
-
-                  setIdeas(prev =>
-                    prev.map(i => i.id === item.id ? { ...i, status: newStatus } : i)
-                  );
-                }}
+                onChangeStatus={(newStatus) => updateIdeaStatus(item.id, newStatus)}
               />
             )}
             ListEmptyComponent={
@@ -578,6 +588,7 @@ export default function HomeScreen() {
             renderItem={({ item }) => (
               <IdeaCard
                 idea={item}
+                isManager={isManager}
                 onComment={() => {
                   console.log("Comment on idea:", item.id);
                 }}
@@ -585,6 +596,7 @@ export default function HomeScreen() {
                 onFollow={(isCurrentlyFollowing) =>
                   handleFollow(item.id, isCurrentlyFollowing)
                 }
+                onChangeStatus={(newStatus) => updateIdeaStatus(item.id, newStatus)}
               />
             )}
             ListEmptyComponent={

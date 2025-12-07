@@ -1,11 +1,11 @@
 import { Idea } from "@/types/index";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, Image, Modal, Text, TouchableOpacity, View } from "react-native";
+import DropdownIcon from "../assets/images/back-icon.png";
 import BellActiveIcon from "../assets/images/bell-active-icon.png";
 import BellIcon from "../assets/images/bell-icon.png";
 import CommentActiveIcon from "../assets/images/comment-active-icon.png";
 import CommentIcon from "../assets/images/comment-icon.png";
-import DropdownIcon from "../assets/images/back-icon.png";
 
 type Props = {
   idea: Idea;
@@ -131,6 +131,7 @@ const IdeaCard: React.FC<Props> = ({
   );
   
   return (
+    <>
     <View className="flex-column gap-0.5 mx-4">
       <View className="bg-white rounded-[10px] border border-brand-black p-3 mb-1">
         <Text className="text-gray-500 text-xs mb-1">
