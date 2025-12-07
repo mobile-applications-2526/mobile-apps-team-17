@@ -47,7 +47,7 @@ export default function HomeScreen() {
   const [showTimeDropdown, setShowTimeDropdown] = useState(false);
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
 
-  const userFollowedIdeas = async () => {
+  const userFollowedIdeas = useCallback(async () => {
     const userProfileString = await AsyncStorage.getItem("user");
 
     if (userProfileString) {
@@ -78,7 +78,7 @@ export default function HomeScreen() {
         setFollowedIdeas(sortedFollowedIdeas);
       }
     }
-  };
+  }, []);
 
   // TODO - to implement
   const handleFollow = async (
@@ -208,13 +208,14 @@ export default function HomeScreen() {
   useEffect(() => {
     load();
     userFollowedIdeas();
-  }, [load]);
+  }, [load, userFollowedIdeas]);
 
   // Refresh followed ideas when screen comes into focus (returning from discussion)
   useFocusEffect(
     useCallback(() => {
+      load();
       userFollowedIdeas();
-    }, [])
+    }, [load, userFollowedIdeas])
   );
 
   const onRefresh = async () => {

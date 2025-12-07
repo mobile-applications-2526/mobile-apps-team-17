@@ -160,9 +160,11 @@ const IdeaCard: React.FC<Props> = ({
           >
             <View className="flex-1 items-center">
               <Text className="text-brand-blue text-sm font-semibold text-center">
-                {currentStatus === 'accepted' || currentStatus === 'declined'
+                {currentStatus === "accepted" || currentStatus === "declined"
                   ? capitalizeStatus(currentStatus)
-                  : `Review date: ${reviewDate}`}
+                  : currentStatus === "commented by manager"
+                    ? "Commented by manager"
+                    : `Review date: ${reviewDate}`}
               </Text>
             </View>
             <View className="w-[20px] items-center">
@@ -261,7 +263,11 @@ const IdeaCard: React.FC<Props> = ({
             </Text>
 
             <Text className="text-center text-brand-blue text-xl font-bold mb-2">
-              {currentStatus !== `accepted` && currentStatus !== `declined` ? `Review date: ${reviewDate}` : capitalizeStatus(currentStatus)}
+              {currentStatus !== "accepted" && currentStatus !== "declined"
+                ? currentStatus === "commented by manager"
+                  ? "Commented by manager"
+                  : `Review date: ${reviewDate}`
+                : capitalizeStatus(currentStatus)}
             </Text>
 
             <View className="items-center mb-2">
