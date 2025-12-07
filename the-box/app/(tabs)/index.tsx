@@ -561,7 +561,10 @@ export default function HomeScreen() {
               <IdeaCard
                 idea={item}
                 onComment={() => {
-                  console.log("Comment on idea:", item.id);
+                  router.push({
+                    pathname: "/discussion/[id]",
+                    params: { id: item.id },
+                  });
                 }}
                 initialIsFollowing={true}
                 onFollow={(isCurrentlyFollowing) =>
