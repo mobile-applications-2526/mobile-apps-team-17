@@ -246,6 +246,70 @@ export default function HomeScreen() {
     );
   }, [timeFilter, statusFilter, searchQuery]);
 
+  const applyFilters = useCallback(
+    (list: Idea[]) => {
+      let filtered = [...list];
+
+      // time filter
+      if (timeFilter !== "all") {
+        const now = new Date();
+        const startOfToday = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate()
+        );
+        const startOfWeek = new Date(startOfToday);
+        const day = startOfWeek.getDay();
+        const diff = day === 0 ? 6 : day - 1;
+        startOfWeek.setDate(startOfWeek.getDate() - diff);
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const startOfYear = new Date(now.getFullYear(), 0, 1);
+
+        let cutoffDate: Date;
+        if (timeFilter === "today") {
+          cutoffDate = startOfToday;
+        } else if (timeFilter === "week") {
+          cutoffDate = startOfWeek;
+        } else if (timeFilter === "month") {
+          cutoffDate = startOfMonth;
+        } else {
+          cutoffDate = startOfYear;
+        }
+
+        filtered = filtered.filter(
+          (idea) => new Date(idea.created_at) >= cutoffDate
+        );
+      }
+
+      // status filter
+      if (statusFilter !== "all") {
+        filtered = filtered.filter((idea) => {
+          if (statusFilter === "accepted") {
+            return idea.status === "accepted";
+          } else if (statusFilter === "declined") {
+            return idea.status === "declined";
+          } else if (statusFilter === "commented_by_manager") {
+            return idea.status === "commented by manager";
+          } else if (statusFilter === "to_be_reviewed") {
+            return idea.status?.startsWith("Review date:");
+          }
+          return true;
+        });
+      }
+
+      // search filter
+      const q = searchQuery.trim().toLowerCase();
+      if (q.length > 0) {
+        filtered = filtered.filter((idea) =>
+          idea.description.toLowerCase().includes(q)
+        );
+      }
+
+      return filtered;
+    },
+    [timeFilter, statusFilter, searchQuery]
+  );
+
   const updateIdeaStatus = async (ideaId: string, newStatus: string) => {
     const { error } = await supabase
       .from("ideas")
@@ -269,66 +333,18 @@ export default function HomeScreen() {
     );
   };
 
-  const filteredIdeas = useMemo(() => {
-    let filtered = [...ideas];
+  const filteredIdeas = useMemo(
+    () => applyFilters(ideas),
+    [ideas, applyFilters]
+  );
 
-    // time filter
-    if (timeFilter !== "all") {
-      const now = new Date();
-      const startOfToday = new Date(
-        now.getFullYear(),
-        now.getMonth(),
-        now.getDate()
-      );
-      const startOfWeek = new Date(startOfToday);
-      const day = startOfWeek.getDay();
-      const diff = day === 0 ? 6 : day - 1;
-      startOfWeek.setDate(startOfWeek.getDate() - diff);
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-      const startOfYear = new Date(now.getFullYear(), 0, 1);
-
-      let cutoffDate: Date;
-      if (timeFilter === "today") {
-        cutoffDate = startOfToday;
-      } else if (timeFilter === "week") {
-        cutoffDate = startOfWeek;
-      } else if (timeFilter === "month") {
-        cutoffDate = startOfMonth;
-      } else {
-        cutoffDate = startOfYear;
-      }
-
-      filtered = filtered.filter(
-        (idea) => new Date(idea.created_at) >= cutoffDate
-      );
-    }
-
-    // status filter
-    if (statusFilter !== "all") {
-      filtered = filtered.filter((idea) => {
-        if (statusFilter === "accepted") {
-          return idea.status === "accepted";
-        } else if (statusFilter === "declined") {
-          return idea.status === "declined";
-        } else if (statusFilter === "commented_by_manager") {
-          return idea.status === "commented by manager";
-        } else if (statusFilter === "to_be_reviewed") {
-          return idea.status?.startsWith("Review date:");
-        }
-        return true;
-      });
-    }
-
-    // search filter
-    const q = searchQuery.trim().toLowerCase();
-    if (q.length > 0) {
-      filtered = filtered.filter((idea) =>
-        idea.description.toLowerCase().includes(q)
-      );
-    }
-
-    return filtered;
-  }, [ideas, timeFilter, statusFilter, searchQuery]);
+  const filteredFollowedIdeas = useMemo(
+    () =>
+      applyFilters(followedIdeas).filter(
+        (idea) => !unfollowingIds.has(String(idea.id))
+      ),
+    [followedIdeas, applyFilters, unfollowingIds]
+  );
 
   if (loading) {
     return <Splash />;
@@ -575,9 +591,7 @@ export default function HomeScreen() {
           />
         ) : (
           <FlatList
-            data={followedIdeas.filter(
-              (idea) => !unfollowingIds.has(String(idea.id))
-            )}
+            data={filteredFollowedIdeas}
             keyExtractor={(item) => String(item.id)}
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
