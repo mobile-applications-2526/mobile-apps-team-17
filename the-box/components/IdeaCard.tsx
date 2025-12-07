@@ -1,6 +1,14 @@
 import { Idea } from "@/types/index";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Image, Modal, Text, TouchableOpacity, View } from "react-native";
+import {
+  ActivityIndicator,
+  Image,
+  Modal,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import Dropdown from "./Dropdown";
 import DropdownIcon from "../assets/images/back-icon.png";
 import BellActiveIcon from "../assets/images/bell-active-icon.png";
 import BellIcon from "../assets/images/bell-icon.png";
@@ -29,7 +37,6 @@ const IdeaCard: React.FC<Props> = ({
   onChangeStatus,
 }) => {
   const [isFollowing, setIsFollowing] = useState(initialIsFollowing);
-  const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
   const [isStatusModalVisible, setIsStatusModalVisible] = useState(false);
   const [currentStatus, setCurrentStatus] = useState(idea.status);
   const [pendingStatus, setPendingStatus] = useState<string | null>(null);
@@ -90,11 +97,10 @@ const IdeaCard: React.FC<Props> = ({
     return status.charAt(0).toUpperCase() + status.slice(1);
   };
 
-  const openStatusModal = (status: string ) => {
+  const openStatusModal = (status: string) => {
     setPendingStatus(status);
-    setIsStatusDropdownOpen(false);
     setIsStatusModalVisible(true);
-  }
+  };
 
   const handleConfirmStatus = async () => {
     if (!pendingStatus) {
@@ -126,9 +132,18 @@ const IdeaCard: React.FC<Props> = ({
   };
 
   const displayPendingStatus = capitalizeStatus(pendingStatus || currentStatus);
-  const statusOptions = ["accepted", "declined"].filter(
-    (status) => status !== currentStatus
-  );
+  const currentStatusLabel =
+    currentStatus === "accepted" || currentStatus === "declined"
+      ? capitalizeStatus(currentStatus)
+      : currentStatus === "commented by manager"
+        ? "Commented by manager"
+        : `Review date: ${reviewDate}`;
+  const statusOptions = ["accepted", "declined"]
+    .filter((status) => status !== currentStatus)
+    .map((status) => ({
+      label: capitalizeStatus(status),
+      value: status,
+    }));
   
   return (
     <>
@@ -151,52 +166,27 @@ const IdeaCard: React.FC<Props> = ({
 
       <View className="flex-row items-center gap-2">
        <View className="relative w-3/5">
-        <View className="rounded-[10px] border-[1.3px] border-brand-black bg-white">
-          <TouchableOpacity
-            className="flex-row items-center px-4 py-2.5"
-            onPress={() => isManager && setIsStatusDropdownOpen((prev) => !prev)}
-            activeOpacity={isManager ? 0.8 : 1}
-            disabled={!isManager}
-          >
-            <View className="flex-1 items-center">
-              <Text className="text-brand-blue text-sm font-semibold text-center">
-                {currentStatus === "accepted" || currentStatus === "declined"
-                  ? capitalizeStatus(currentStatus)
-                  : currentStatus === "commented by manager"
-                    ? "Commented by manager"
-                    : `Review date: ${reviewDate}`}
-              </Text>
-            </View>
-            <View className="w-[20px] items-center">
-              {isManager && (
-                <Image
-                  source={DropdownIcon}
-                  style={{
-                    width: 20,
-                    height: 20,
-                    marginLeft: 8,
-                    transform: [{ rotate: "-90deg" }],
-                  }}
-                />
-              )}
-            </View>
-          </TouchableOpacity>
-          </View>
-
-          {isStatusDropdownOpen && (
-            <View className="absolute top-full left-0 right-0 bg-white border-[1.3px] border-t-[0px] border-brand-black rounded-[10px] z-10">
-              {statusOptions.map((statusOption) => (
-                <TouchableOpacity
-                  key={statusOption}
-                  className="py-2 px-4"
-                  onPress={() => openStatusModal(statusOption)}
-                  activeOpacity={0.8}
-                >
+          {isManager ? (
+            <Dropdown
+              disabled={!isManager}
+              options={statusOptions}
+              onSelect={openStatusModal}
+              iconSource={DropdownIcon}
+              triggerContent={
+                <Text className="text-brand-blue text-sm font-semibold text-center">
+                  {currentStatusLabel}
+                </Text>
+              }
+            />
+          ) : (
+            <View className="bg-white border-[1.3px] border-brand-black rounded-[10px]">
+              <View className="flex-row items-center px-4 py-2.5">
+                <View className="flex-1 items-center">
                   <Text className="text-brand-blue text-sm font-semibold text-center">
-                    {capitalizeStatus(statusOption)}
+                    {currentStatusLabel}
                   </Text>
-                </TouchableOpacity>
-              ))}
+                </View>
+              </View>
             </View>
           )}
         </View>
@@ -263,11 +253,7 @@ const IdeaCard: React.FC<Props> = ({
             </Text>
 
             <Text className="text-center text-brand-blue text-xl font-bold mb-2">
-              {currentStatus !== "accepted" && currentStatus !== "declined"
-                ? currentStatus === "commented by manager"
-                  ? "Commented by manager"
-                  : `Review date: ${reviewDate}`
-                : capitalizeStatus(currentStatus)}
+              {currentStatusLabel}
             </Text>
 
             <View className="items-center mb-2">
