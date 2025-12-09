@@ -4,12 +4,14 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Clipboard from "expo-clipboard";
 import { Tabs, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { ActionSheetIOS, Image, Pressable } from "react-native";
+import { Image, Pressable } from "react-native";
+import { useActionSheet } from "@expo/react-native-action-sheet";
 import LogoutIcon from "../../assets/images/logout-icon.png";
 import MoreIcon from "../../assets/images/more-icon.png";
 
 export default function TabLayout() {
   const router = useRouter();
+  const { showActionSheetWithOptions } = useActionSheet();
   const [user, setUser] = useState<any>(null);
   const [openMenu, setOpenMenu] = useState(false);
 
@@ -45,7 +47,7 @@ export default function TabLayout() {
   };
 
   const showMenu = () => {
-    ActionSheetIOS.showActionSheetWithOptions(
+    showActionSheetWithOptions(
       {
         options: ["Create code", "Cancel"],
         cancelButtonIndex: 1,
@@ -57,7 +59,7 @@ export default function TabLayout() {
   };
 
   const showMenuCopy = (code: string) => {
-    ActionSheetIOS.showActionSheetWithOptions(
+    showActionSheetWithOptions(
       {
         options: ["Copy code", "Cancel"],
         cancelButtonIndex: 1,
