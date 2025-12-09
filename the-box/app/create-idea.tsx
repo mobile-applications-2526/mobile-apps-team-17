@@ -1,6 +1,6 @@
 import Input from "@/components/forms/Input";
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -30,6 +30,7 @@ export default function CreateIdeaScreen() {
     description: "", // for input field errors
     general: "", // for other errors like system, etc
   });
+  const [isAnonymous, setIsAnonymous] = useState(false);
   const profanityFilter = new Filter();
 
   const getLastFriday =() => {
@@ -47,6 +48,23 @@ export default function CreateIdeaScreen() {
   interface PredictResponse {
     prediction: string;
   }
+
+  useEffect(() => {
+    const checkAnonymousMode = async () => {
+      try {
+        const isAnonymousMode = await AsyncStorage.getItem("anonymous_mode");
+        if (isAnonymousMode === "true") {
+          setIsAnonymous(true);
+        } else {
+          setIsAnonymous(false);
+        }
+      } catch (error) {
+        console.error("Failed to check anonymous mode:", error);
+      }
+    }
+    checkAnonymousMode();
+  }, []);
+
 
   // const analyzeText = async (textToAnalyze: string): Promise<string | undefined> => {
   //   try {
@@ -105,13 +123,20 @@ export default function CreateIdeaScreen() {
 
       const lastFriday = getLastFriday();
 
+      // Hide manager's ID if in anonymous mode
+      const isAnonymousMode = await AsyncStorage.getItem("anonymous_mode");
+      let userId = storedUser.id;
+      if (isAnonymousMode === "true") {
+        userId = null;
+      }
+
       const { error } = await supabase.from("ideas").insert({
         company_id: storedUser.company_id,
         subject: subject.trim() || null,
         department: department.trim() || null,
         description: description.trim(),
         status: `Review date: ${lastFriday.toISOString().split("T")[0]}`,
-        created_by: storedUser.id,
+        created_by: userId,
         created_at: new Date().toISOString(),
       });
 

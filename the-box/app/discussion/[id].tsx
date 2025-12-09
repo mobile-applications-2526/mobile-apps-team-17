@@ -34,8 +34,23 @@ export default function DiscussionScreen() {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [isFollowing, setIsFollowing] = useState(false);
   const [followStatusLoading, setFollowStatusLoading] = useState(true);
+  const [isAnonymous, setIsAnonymous] = useState(false);
 
   useEffect(() => {
+    const checkAnonymousMode = async () => {
+      try {
+        const isAnonymousMode = await AsyncStorage.getItem("anonymous_mode");
+        if (isAnonymousMode === "true") {
+          setIsAnonymous(true);
+        } else {
+          setIsAnonymous(false); 
+        }
+      } catch (error) {
+        console.error("Failed to check anonymous mode:", error);
+      }
+    }
+    checkAnonymousMode();
+
     const loadUser = async () => {
       try {
         const userData = await AsyncStorage.getItem("user");
@@ -163,7 +178,11 @@ export default function DiscussionScreen() {
     if (!commentText.trim()) return;
 
     try {
-      const isManager = currentUser?.role === "manager";
+      let isManager = true;
+      if (isAnonymous) {
+        isManager = false;
+      }
+
       const insertData: any = {
         idea_id: id,
         content: commentText.trim(),
