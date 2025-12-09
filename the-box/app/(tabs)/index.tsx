@@ -8,6 +8,7 @@ import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Animated,
+  Dimensions,
   FlatList,
   Image,
   KeyboardAvoidingView,
@@ -42,6 +43,9 @@ export default function HomeScreen() {
 
   const slideAnim = useRef(new Animated.Value(0)).current;
 
+  const screenWidth = Dimensions.get("window").width;
+  const slideDistance = screenWidth * 1.1;
+
   type TimeFilter = "all" | "today" | "week" | "month" | "year";
   type StatusFilter =
     | "all"
@@ -68,7 +72,8 @@ export default function HomeScreen() {
       if (error) {
         setError(error.message);
       } else {
-        const followedIdeasRaw = data?.map((item: any) => item.idea).flat() ?? [];
+        const followedIdeasRaw =
+          data?.map((item: any) => item.idea).flat() ?? [];
         const uniqueFollowedIdeas = followedIdeasRaw.filter(
           (idea: Idea, index: number, self: Idea[]) =>
             index === self.findIndex((i) => i.id === idea.id)
@@ -100,7 +105,9 @@ export default function HomeScreen() {
           return;
         }
         if (!isCurrentlyFollowing) {
-          const isAlreadyFollowing = followedIdeas.some((idea) => idea.id === ideaId);
+          const isAlreadyFollowing = followedIdeas.some(
+            (idea) => idea.id === ideaId
+          );
           if (isAlreadyFollowing) {
             return;
           }
@@ -320,7 +327,8 @@ export default function HomeScreen() {
     return <Splash />;
   }
 
-  const bottomPadding = 160;
+  const screenHeight = Dimensions.get("window").height;
+  const bottomPadding = screenHeight * 0.2;
 
   return (
     <KeyboardAvoidingView
@@ -328,15 +336,18 @@ export default function HomeScreen() {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
       keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
     >
-      <View className="flex-1 mt-5" style={{ overflow: 'visible' }}>
+      <View className="flex-1 mt-5" style={{ overflow: "visible" }}>
         <View
           className="w-full pb-2 px-4"
           style={{
             zIndex: 1000,
-            overflow: 'visible'
+            overflow: "visible",
           }}
         >
-          <View className="w-full flex-row items-center gap-2" style={{ overflow: 'hidden' }}>
+          <View
+            className="w-full flex-row items-center gap-2"
+            style={{ overflow: "hidden" }}
+          >
             <Animated.View
               className="flex-1 flex-row gap-2"
               style={{
@@ -344,63 +355,63 @@ export default function HomeScreen() {
                   {
                     translateX: slideAnim.interpolate({
                       inputRange: [0, 1],
-                      outputRange: [0, -400],
+                      outputRange: [0, -slideDistance],
                     }),
                   },
                 ],
               }}
               pointerEvents={isFilterActive ? "none" : "auto"}
             >
-            <TouchableOpacity
-              className={`flex-1 rounded-3xl ${togglePage === "all" ? "bg-brand-blue py-[0.6rem]" : "bg-white border border-brand-black py-2"}`}
-              onPress={() => setTogglePage("all")}
-            >
-              <Text
-                className={`text-center font-medium ${togglePage === "all" ? "text-white" : "text-brand-black"}`}
+              <TouchableOpacity
+                className={`flex-1 rounded-3xl ${togglePage === "all" ? "bg-brand-blue py-[0.6rem]" : "bg-white border border-brand-black py-2"}`}
+                onPress={() => setTogglePage("all")}
               >
-                All Posts
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              className={`flex-1 rounded-3xl ${togglePage === "following" ? "bg-brand-blue py-[0.6rem]" : "bg-white border-brand-black border py-2"}`}
-              onPress={() => setTogglePage("following")}
-            >
-              <Text
-                className={`text-center font-medium ${togglePage === "following" ? "text-white" : "text-brand-black"}`}
+                <Text
+                  className={`text-center font-medium ${togglePage === "all" ? "text-white" : "text-brand-black"}`}
+                >
+                  All Posts
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                className={`flex-1 rounded-3xl ${togglePage === "following" ? "bg-brand-blue py-[0.6rem]" : "bg-white border-brand-black border py-2"}`}
+                onPress={() => setTogglePage("following")}
               >
-                Following
-              </Text>
-            </TouchableOpacity>
-          </Animated.View>
+                <Text
+                  className={`text-center font-medium ${togglePage === "following" ? "text-white" : "text-brand-black"}`}
+                >
+                  Following
+                </Text>
+              </TouchableOpacity>
+            </Animated.View>
 
-          <Animated.View
-            style={{
-              transform: [
-                {
-                  translateX: slideAnim.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [0, -400],
-                  }),
-                },
-              ],
-            }}
-            pointerEvents={isFilterActive ? "none" : "auto"}
-          >
-            <TouchableOpacity
-              onPress={handleFilteringPress}
-              className={`rounded-full p-2 border ${
-                hasActiveFilters
-                  ? "bg-brand-blue border-brand-blue"
-                  : "bg-white border-black"
-              }`}
+            <Animated.View
+              style={{
+                transform: [
+                  {
+                    translateX: slideAnim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [0, -slideDistance],
+                    }),
+                  },
+                ],
+              }}
+              pointerEvents={isFilterActive ? "none" : "auto"}
             >
-              <Image
-                source={hasActiveFilters ? FunnelIconActive : FunnelIcon}
-                style={{ width: 18, height: 18 }}
-                resizeMode="contain"
-              />
-            </TouchableOpacity>
-          </Animated.View>
+              <TouchableOpacity
+                onPress={handleFilteringPress}
+                className={`rounded-full p-2 border ${
+                  hasActiveFilters
+                    ? "bg-brand-blue border-brand-blue"
+                    : "bg-white border-black"
+                }`}
+              >
+                <Image
+                  source={hasActiveFilters ? FunnelIconActive : FunnelIcon}
+                  style={{ width: 18, height: 18 }}
+                  resizeMode="contain"
+                />
+              </TouchableOpacity>
+            </Animated.View>
           </View>
 
           <Animated.View
@@ -410,7 +421,7 @@ export default function HomeScreen() {
                 {
                   translateX: slideAnim.interpolate({
                     inputRange: [0, 1],
-                    outputRange: [400, 0],
+                    outputRange: [slideDistance, 0],
                   }),
                 },
               ],
