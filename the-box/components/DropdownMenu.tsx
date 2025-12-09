@@ -91,7 +91,7 @@ export default function CustomDropdown({
         >
           <Text
             className="text-brand-blue font-medium flex-1 text-center"
-            numberOfLines={1}
+            numberOfLines={isOpen ? undefined : 1}
             ellipsizeMode="tail"
           >
             {displayText}
@@ -130,8 +130,6 @@ export default function CustomDropdown({
               >
                 <Text
                   className="text-brand-blue font-medium text-center"
-                  numberOfLines={1}
-                  ellipsizeMode="tail"
                 >
                   {option.label}
                 </Text>

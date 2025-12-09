@@ -431,11 +431,11 @@ export default function HomeScreen() {
           >
             <TouchableOpacity
               onPress={handleFilteringPress}
-              className="justify-center items-center"
+              className="justify-start items-center"
             >
               <Image
                 source={BackIcon}
-                style={{ width: 30, height: 30 }}
+                style={{ width: 34, height: 34 }}
                 resizeMode="contain"
               />
             </TouchableOpacity>
