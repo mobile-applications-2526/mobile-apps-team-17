@@ -4,7 +4,7 @@ import Splash from "@/components/Splash";
 import { supabase } from "@/supabase";
 import { Idea } from "@/types/index";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Animated,
@@ -73,7 +73,12 @@ export default function HomeScreen() {
           (idea: Idea, index: number, self: Idea[]) =>
             index === self.findIndex((i) => i.id === idea.id)
         );
-        setFollowedIdeas(uniqueFollowedIdeas);
+        // sort
+        const sortedFollowedIdeas = uniqueFollowedIdeas.sort(
+          (a: Idea, b: Idea) =>
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+        setFollowedIdeas(sortedFollowedIdeas);
       }
     }
   };
@@ -206,6 +211,13 @@ export default function HomeScreen() {
     userFollowedIdeas();
   }, [load]);
 
+  // Refresh followed ideas when screen comes into focus (returning from discussion)
+  useFocusEffect(
+    useCallback(() => {
+      userFollowedIdeas();
+    }, [])
+  );
+
   const onRefresh = async () => {
     setRefreshing(true);
     await load();
@@ -307,6 +319,8 @@ export default function HomeScreen() {
   if (loading) {
     return <Splash />;
   }
+
+  const bottomPadding = 160;
 
   return (
     <KeyboardAvoidingView
@@ -470,7 +484,10 @@ export default function HomeScreen() {
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
             }
-            contentContainerStyle={{ paddingTop: 16, paddingBottom: 120 }}
+            contentContainerStyle={{
+              paddingTop: 16,
+              paddingBottom: bottomPadding,
+            }}
             showsVerticalScrollIndicator={true}
             ItemSeparatorComponent={() => <View style={{ height: 29 }} />}
             renderItem={({ item }) => (
@@ -509,14 +526,20 @@ export default function HomeScreen() {
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
             }
-            contentContainerStyle={{ paddingTop: 16, paddingBottom: 120 }}
+            contentContainerStyle={{
+              paddingTop: 16,
+              paddingBottom: bottomPadding,
+            }}
             showsVerticalScrollIndicator={true}
             ItemSeparatorComponent={() => <View style={{ height: 29 }} />}
             renderItem={({ item }) => (
               <IdeaCard
                 idea={item}
                 onComment={() => {
-                  console.log("Comment on idea:", item.id);
+                  router.push({
+                    pathname: "/discussion/[id]",
+                    params: { id: item.id },
+                  });
                 }}
                 initialIsFollowing={true}
                 onFollow={(isCurrentlyFollowing) =>

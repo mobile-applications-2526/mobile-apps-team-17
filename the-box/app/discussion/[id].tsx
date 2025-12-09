@@ -32,8 +32,25 @@ export default function DiscussionScreen() {
   const [error, setError] = useState<string | null>(null);
   const [showCommentInput, setShowCommentInput] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followStatusLoading, setFollowStatusLoading] = useState(true);
+  const [isAnonymous, setIsAnonymous] = useState(false);
 
   useEffect(() => {
+    const checkAnonymousMode = async () => {
+      try {
+        const isAnonymousMode = await AsyncStorage.getItem("anonymous_mode");
+        if (isAnonymousMode === "true") {
+          setIsAnonymous(true);
+        } else {
+          setIsAnonymous(false); 
+        }
+      } catch (error) {
+        console.error("Failed to check anonymous mode:", error);
+      }
+    }
+    checkAnonymousMode();
+
     const loadUser = async () => {
       try {
         const userData = await AsyncStorage.getItem("user");
@@ -46,6 +63,36 @@ export default function DiscussionScreen() {
     };
     loadUser();
   }, []);
+
+  const checkFollowStatus = useCallback(async () => {
+    try {
+      setFollowStatusLoading(true);
+      const userData = await AsyncStorage.getItem("user");
+      if (!userData) return;
+
+      const user = JSON.parse(userData);
+      const { data, error } = await supabase
+        .from("users_followed_ideas")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("idea_id", id);
+
+      if (error) {
+        console.error("Error checking follow status:", error);
+        return;
+      }
+
+      setIsFollowing(data && data.length > 0);
+    } catch (error) {
+      console.error("Error checking follow status:", error);
+    } finally {
+      setFollowStatusLoading(false);
+    }
+  }, [id]);
+
+  useEffect(() => {
+    checkFollowStatus();
+  }, [checkFollowStatus]);
 
   const loadIdeaAndComments = useCallback(async () => {
     if (!refreshing) {
@@ -131,7 +178,11 @@ export default function DiscussionScreen() {
     if (!commentText.trim()) return;
 
     try {
-      const isManager = currentUser?.role === "manager";
+      let isManager = true;
+      if (isAnonymous) {
+        isManager = false;
+      }
+
       const insertData: any = {
         idea_id: id,
         content: commentText.trim(),
@@ -198,12 +249,59 @@ export default function DiscussionScreen() {
     Keyboard.dismiss();
   };
 
-  // TODO - to implement
-  const handleFollow = (ideaId: string, isCurrentlyFollowing: boolean) => {
-    console.log(
-      `Idea ${ideaId} follow status toggled to ${!isCurrentlyFollowing}`
-    );
-    return Promise.resolve();
+  const handleFollow = async (
+    ideaId: string,
+    isCurrentlyFollowing: boolean
+  ) => {
+    try {
+      const userProfileString = await AsyncStorage.getItem("user");
+
+      if (userProfileString) {
+        let userProfile: { id?: string } | null = null;
+        try {
+          userProfile = JSON.parse(userProfileString);
+        } catch (e) {
+          setError("Invalid user profile stored locally");
+          return;
+        }
+        if (!isCurrentlyFollowing) {
+          if (isFollowing) {
+            return;
+          }
+
+          const { error } = await supabase
+            .from("users_followed_ideas")
+            .insert({
+              user_id: userProfile?.id,
+              idea_id: ideaId,
+            });
+
+          if (error) {
+            console.error("Error following idea:", error);
+            setError(error.message);
+            return;
+          }
+          setIsFollowing(true);
+        } else {
+          const { error } = await supabase
+            .from("users_followed_ideas")
+            .delete()
+            .eq("user_id", userProfile?.id)
+            .eq("idea_id", ideaId);
+
+          if (error) {
+            console.error("Error unfollowing idea:", error);
+            setError(error.message);
+            return;
+          }
+          setIsFollowing(false);
+        }
+
+        return Promise.resolve();
+      }
+    } catch (error) {
+      console.error("Error in handleFollow:", error);
+    }
   };
 
   return (
@@ -217,8 +315,9 @@ export default function DiscussionScreen() {
           {idea && (
             <IdeaCard
               idea={idea}
-              initialIsFollowing={false}
+              initialIsFollowing={isFollowing}
               isCommentActive={true}
+              isFollowLoading={followStatusLoading}
               onComment={() => {
                 return;
               }}

@@ -4,18 +4,24 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Clipboard from "expo-clipboard";
 import { Tabs, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { ActionSheetIOS, Image, Pressable } from "react-native";
+import { Image, Pressable } from "react-native";
+import { useActionSheet } from "@expo/react-native-action-sheet";
 import LogoutIcon from "../../assets/images/logout-icon.png";
 import MoreIcon from "../../assets/images/more-icon.png";
+import Incognito from "../../assets/images/incognito.png";
 
 export default function TabLayout() {
   const router = useRouter();
+  const { showActionSheetWithOptions } = useActionSheet();
   const [user, setUser] = useState<any>(null);
   const [openMenu, setOpenMenu] = useState(false);
+  const [isAnonymous, setIsAnonymous] = useState(false);
 
   const loadUser = async () => {
     try {
       const userData = await AsyncStorage.getItem("user");
+      const anonymousMode = await AsyncStorage.getItem("anonymous_mode");
+      if (anonymousMode === "true") setIsAnonymous(true);
 
       if (userData) {
         const parsed = JSON.parse(userData);
@@ -44,20 +50,38 @@ export default function TabLayout() {
     }
   };
 
+  const toggleAnonymousMode = async () => {
+    const newValue = !isAnonymous;
+    setIsAnonymous(newValue);
+    await AsyncStorage.setItem("anonymous_mode", String(newValue));
+    alert(newValue ? "Anonymous mode enabled." : "Anonymous mode disabled.");
+  };
+
+  const turnoffAnonymousMode = async () => {
+    setIsAnonymous(false);
+    await AsyncStorage.setItem("anonymous_mode", "false");
+    alert("Anonymous mode disabled.");
+  };
+
   const showMenu = () => {
-    ActionSheetIOS.showActionSheetWithOptions(
+    const anonymousOption = isAnonymous
+      ? "Disable anonymous mode"
+      : "Enable anonymous mode";
+
+    showActionSheetWithOptions(
       {
-        options: ["Create code", "Cancel"],
-        cancelButtonIndex: 1,
+        options: [anonymousOption, "Create code for anonymous users", "Cancel"],
+        cancelButtonIndex: 2,
       },
       (buttonIndex) => {
-        if (buttonIndex === 0) handGenerateCode();
+        if (buttonIndex === 0) toggleAnonymousMode();
+        if (buttonIndex === 1) handGenerateCode();
       }
     );
   };
 
   const showMenuCopy = (code: string) => {
-    ActionSheetIOS.showActionSheetWithOptions(
+    showActionSheetWithOptions(
       {
         options: ["Copy code", "Cancel"],
         cancelButtonIndex: 1,
@@ -139,6 +163,17 @@ export default function TabLayout() {
         headerTitleAlign: "left",
         headerRight: () => (
           <>
+            {isAnonymous && (
+              <Pressable
+                onPress={turnoffAnonymousMode}
+                style={{
+                  padding: 8,
+                }}
+              >
+                <Image source={Incognito} style={{ width: 36, height: 36 }} />
+              </Pressable>
+            )}
+
             {openMenu && (
               <Pressable
                 onPress={showMenu}
@@ -153,7 +188,6 @@ export default function TabLayout() {
             <Pressable
               onPress={handleLogout}
               style={{
-                marginRight: 15,
                 padding: 8,
               }}
             >
