@@ -2,7 +2,7 @@ import CustomDropdown from "@/components/DropdownMenu";
 import IdeaCard from "@/components/IdeaCard";
 import Splash from "@/components/Splash";
 import { supabase } from "@/supabase";
-import { Idea } from "@/types/index";
+import { getOSInfo, Idea } from "@/types/index";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -41,6 +41,7 @@ export default function HomeScreen() {
   const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
 
   const slideAnim = useRef(new Animated.Value(0)).current;
+  const osInfo = getOSInfo();
 
   type TimeFilter = "all" | "today" | "week" | "month" | "year";
   type StatusFilter =
@@ -328,10 +329,13 @@ export default function HomeScreen() {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
       keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
     >
-      <View className="flex-1 mt-5">
+      <View className="flex-1 mt-5" style={{ overflow: osInfo.isIOS ? 'visible' : 'hidden' }}>
         <View
           className="w-full flex flex-row items-center pb-2 px-4 gap-2"
-          style={{ zIndex: 1000 }}
+          style={{
+            zIndex: 1000,
+            overflow: osInfo.isIOS ? 'visible' : 'hidden'
+          }}
         >
           <Animated.View
             className="flex-1 flex-row gap-2"
