@@ -611,15 +611,27 @@ export default function HomeScreen() {
                   />
                 </View>
 
-                <TextInput
-                  className="flex-1 text-center text-base font-sf-pro text-brand-blue pb-2"
-                  placeholder="Search by keywords"
-                  placeholderTextColor="#1876f25d"
-                  value={searchQuery}
-                  onChangeText={setSearchQuery}
-                  autoCorrect={false}
-                  autoCapitalize="none"
-                />
+                <View className="flex-1 justify-center h-10">
+                  {searchQuery.length === 0 && (
+                    <Text
+                      pointerEvents="none"
+                      className="absolute w-full text-center text-base font-sf-pro"
+                      style={{ color: "#1876f25d", lineHeight: 20 }}
+                    >
+                      Search by keywords
+                    </Text>
+                  )}
+
+                  <TextInput
+                    className="flex-1 text-left text-base font-sf-pro text-brand-black h-10"
+                    value={searchQuery}
+                    onChangeText={setSearchQuery}
+                    autoCorrect={false}
+                    autoCapitalize="none"
+                    style={{ paddingVertical: 0 }}
+                    placeholderTextColor="transparent"
+                  />
+                </View>
               </View>
             </View>
 
