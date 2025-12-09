@@ -585,6 +585,11 @@ export default function HomeScreen() {
           />
         )}
 
+        <View
+          className="absolute bottom-0 left-0 right-0"
+          style={{ height: 50, backgroundColor: "white" }}
+        />
+
         <View className="absolute bottom-5 left-4 right-4">
           <View
             className="p-3 rounded-3xl bg-white"
