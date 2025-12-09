@@ -4,13 +4,15 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Clipboard from "expo-clipboard";
 import { Tabs, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { ActionSheetIOS, Image, Pressable } from "react-native";
+import { Image, Pressable } from "react-native";
+import { useActionSheet } from "@expo/react-native-action-sheet";
 import LogoutIcon from "../../assets/images/logout-icon.png";
 import MoreIcon from "../../assets/images/more-icon.png";
 import Incognito from "../../assets/images/incognito.png";
 
 export default function TabLayout() {
   const router = useRouter();
+  const { showActionSheetWithOptions } = useActionSheet();
   const [user, setUser] = useState<any>(null);
   const [openMenu, setOpenMenu] = useState(false);
   const [isAnonymous, setIsAnonymous] = useState(false);
@@ -66,7 +68,7 @@ export default function TabLayout() {
       ? "Disable anonymous mode"
       : "Enable anonymous mode";
 
-    ActionSheetIOS.showActionSheetWithOptions(
+    showActionSheetWithOptions(
       {
         options: [anonymousOption, "Create code for anonymous users", "Cancel"],
         cancelButtonIndex: 2,
@@ -79,7 +81,7 @@ export default function TabLayout() {
   };
 
   const showMenuCopy = (code: string) => {
-    ActionSheetIOS.showActionSheetWithOptions(
+    showActionSheetWithOptions(
       {
         options: ["Copy code", "Cancel"],
         cancelButtonIndex: 1,

@@ -1,7 +1,8 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Stack, usePathname, useRouter, useSegments } from "expo-router";
 import { useEffect, useState } from "react";
-import { Image, TouchableOpacity, View} from "react-native";
+import { Image, TouchableOpacity, View } from "react-native";
+import { ActionSheetProvider } from "@expo/react-native-action-sheet";
 import CustomBackIcon from "../assets/images/back-icon.png";
 import Splash from "../components/Splash";
 import "../global.css";
@@ -89,39 +90,41 @@ export default function RootLayout() {
   }
 
   return (
-    <Stack
-      screenOptions={{
-        headerShown: false,
-        contentStyle: { backgroundColor: "white" },
-      }}
-    >
-      <Stack.Screen name="(auth)" />
-      <Stack.Screen name="(tabs)" />
-      <Stack.Screen
-        name="create-idea"
-        options={{
-          presentation: "modal",
-          headerShown: true,
-          headerTitle: () => (
-            <View className="flex-row">
-              <PageHeader title="Draft" />
-              {isAnonymous && (
-                <Image
-                  source={Incognito}
-                  style={{ width: 20, height: 20}}
-                  resizeMode="contain"
-                />
-              )}
-            </View>
-          ),
-          headerShadowVisible: false,
-          headerBackVisible: false,
-          headerStyle: {
-            backgroundColor: "#ffffff",
-          },
-          headerTitleAlign: "left",
+    <ActionSheetProvider>
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: "white" },
         }}
-      />
-    </Stack>
+      >
+        <Stack.Screen name="(auth)" />
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen
+          name="create-idea"
+          options={{
+            presentation: "modal",
+            headerShown: true,
+            headerTitle: () => (
+              <View className="flex-row">
+                <PageHeader title="Draft" />
+                {isAnonymous && (
+                  <Image
+                    source={Incognito}
+                    style={{ width: 20, height: 20}}
+                    resizeMode="contain"
+                  />
+                )}
+              </View>
+            ),
+            headerShadowVisible: false,
+            headerBackVisible: false,
+            headerStyle: {
+              backgroundColor: "#ffffff",
+            },
+            headerTitleAlign: "left",
+          }}
+        />
+      </Stack>
+    </ActionSheetProvider>
   );
 }
