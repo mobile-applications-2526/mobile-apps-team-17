@@ -308,6 +308,8 @@ export default function HomeScreen() {
     return <Splash />;
   }
 
+  const bottomPadding = 160;
+
   return (
     <KeyboardAvoidingView
       className="flex-1 bg-white"
@@ -515,7 +517,10 @@ export default function HomeScreen() {
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
             }
-            contentContainerStyle={{ paddingTop: 16, paddingBottom: 120 }}
+            contentContainerStyle={{
+              paddingTop: 16,
+              paddingBottom: bottomPadding,
+            }}
             showsVerticalScrollIndicator={true}
             ItemSeparatorComponent={() => <View style={{ height: 29 }} />}
             renderItem={({ item }) => (
@@ -554,14 +559,20 @@ export default function HomeScreen() {
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
             }
-            contentContainerStyle={{ paddingTop: 16, paddingBottom: 120 }}
+            contentContainerStyle={{
+              paddingTop: 16,
+              paddingBottom: bottomPadding,
+            }}
             showsVerticalScrollIndicator={true}
             ItemSeparatorComponent={() => <View style={{ height: 29 }} />}
             renderItem={({ item }) => (
               <IdeaCard
                 idea={item}
                 onComment={() => {
-                  console.log("Comment on idea:", item.id);
+                  router.push({
+                    pathname: "/discussion/[id]",
+                    params: { id: item.id },
+                  });
                 }}
                 initialIsFollowing={true}
                 onFollow={(isCurrentlyFollowing) =>
