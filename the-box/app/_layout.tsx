@@ -1,12 +1,13 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Stack, usePathname, useRouter, useSegments } from "expo-router";
 import { useEffect, useState } from "react";
-import { Image, TouchableOpacity } from "react-native";
+import { Image, TouchableOpacity, View } from "react-native";
 import { ActionSheetProvider } from "@expo/react-native-action-sheet";
 import CustomBackIcon from "../assets/images/back-icon.png";
 import Splash from "../components/Splash";
 import "../global.css";
 import PageHeader from "@/components/PageHeader";
+import Incognito from "../assets/images/incognito.png";
 
 const CustomLeftButton = () => {
   const router = useRouter();
@@ -29,6 +30,19 @@ export default function RootLayout() {
   const segments = useSegments();
   const pathname = usePathname();
   const router = useRouter();
+  const [isAnonymous, setIsAnonymous] = useState(false);
+
+  useEffect(() => {
+        const checkAnonymous = async () => {
+      try {
+        const mode = await AsyncStorage.getItem("anonymous_mode");
+        setIsAnonymous(mode === "true");
+      } catch (e) {
+        console.error("Failed to check anonymous mode", e);
+      }
+    };
+    checkAnonymous();
+  }, [pathname]);
 
   // for branding
   useEffect(() => {
@@ -90,7 +104,18 @@ export default function RootLayout() {
           options={{
             presentation: "modal",
             headerShown: true,
-            headerTitle: () => <PageHeader title="Draft" />,
+            headerTitle: () => (
+              <View className="flex-row">
+                <PageHeader title="Draft" />
+                {isAnonymous && (
+                  <Image
+                    source={Incognito}
+                    style={{ width: 20, height: 20}}
+                    resizeMode="contain"
+                  />
+                )}
+              </View>
+            ),
             headerShadowVisible: false,
             headerBackVisible: false,
             headerStyle: {
