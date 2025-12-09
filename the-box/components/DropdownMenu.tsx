@@ -89,7 +89,11 @@ export default function CustomDropdown({
           onPress={handleToggle}
           className="flex-row items-center justify-between px-4 py-2"
         >
-          <Text className="text-brand-blue font-medium flex-1 text-center">
+          <Text
+            className="text-brand-blue font-medium flex-1 text-center"
+            numberOfLines={1}
+            ellipsizeMode="tail"
+          >
             {displayText}
           </Text>
           <View
@@ -124,7 +128,11 @@ export default function CustomDropdown({
                 onPress={() => handleSelect(option.value)}
                 className="px-4 py-2"
               >
-                <Text className="text-brand-blue font-medium text-center">
+                <Text
+                  className="text-brand-blue font-medium text-center"
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
+                >
                   {option.label}
                 </Text>
               </TouchableOpacity>
