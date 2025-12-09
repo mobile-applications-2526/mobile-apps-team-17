@@ -2,7 +2,7 @@ import CustomDropdown from "@/components/DropdownMenu";
 import IdeaCard from "@/components/IdeaCard";
 import Splash from "@/components/Splash";
 import { supabase } from "@/supabase";
-import { getOSInfo, Idea } from "@/types/index";
+import { Idea } from "@/types/index";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -41,7 +41,6 @@ export default function HomeScreen() {
   const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
 
   const slideAnim = useRef(new Animated.Value(0)).current;
-  const osInfo = getOSInfo();
 
   type TimeFilter = "all" | "today" | "week" | "month" | "year";
   type StatusFilter =
@@ -329,28 +328,29 @@ export default function HomeScreen() {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
       keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
     >
-      <View className="flex-1 mt-5" style={{ overflow: osInfo.isIOS ? 'visible' : 'hidden' }}>
+      <View className="flex-1 mt-5" style={{ overflow: 'visible' }}>
         <View
-          className="w-full flex flex-row items-center pb-2 px-4 gap-2"
+          className="w-full pb-2 px-4"
           style={{
             zIndex: 1000,
-            overflow: osInfo.isIOS ? 'visible' : 'hidden'
+            overflow: 'visible'
           }}
         >
-          <Animated.View
-            className="flex-1 flex-row gap-2"
-            style={{
-              transform: [
-                {
-                  translateX: slideAnim.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [0, -400],
-                  }),
-                },
-              ],
-            }}
-            pointerEvents={isFilterActive ? "none" : "auto"}
-          >
+          <View className="w-full flex-row items-center gap-2" style={{ overflow: 'hidden' }}>
+            <Animated.View
+              className="flex-1 flex-row gap-2"
+              style={{
+                transform: [
+                  {
+                    translateX: slideAnim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [0, -400],
+                    }),
+                  },
+                ],
+              }}
+              pointerEvents={isFilterActive ? "none" : "auto"}
+            >
             <TouchableOpacity
               className={`flex-1 rounded-3xl ${togglePage === "all" ? "bg-brand-blue py-[0.6rem]" : "bg-white border border-brand-black py-2"}`}
               onPress={() => setTogglePage("all")}
@@ -401,9 +401,10 @@ export default function HomeScreen() {
               />
             </TouchableOpacity>
           </Animated.View>
+          </View>
 
           <Animated.View
-            className="flex-row gap-2 absolute left-4 right-4"
+            className="flex-row gap-2 absolute left-4 right-4 top-0"
             style={{
               transform: [
                 {

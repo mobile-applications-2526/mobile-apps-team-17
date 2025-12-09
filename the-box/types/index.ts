@@ -1,5 +1,3 @@
-import { Platform } from "react-native";
-
 export type Idea = {
   id: string;
   company_id: string;
@@ -24,18 +22,4 @@ export type Comment = {
   created_by?: string;
   user_name?: string;
   user_department?: string;
-};
-
-export interface OSInfo {
-  isIOS: boolean;
-  isAndroid: boolean;
-  isWeb: boolean;
-}
-
-export const getOSInfo = (): OSInfo => {
-  return {
-    isIOS: Platform.OS === "ios",
-    isAndroid: Platform.OS === "android",
-    isWeb: Platform.OS === "web",
-  };
 };
