@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Image, TouchableOpacity, View, Text, ImageSourcePropType } from "react-native";
+import { Image, ImageSourcePropType, Text, TouchableOpacity, View } from "react-native";
 
 type DropdownOption = {
   label: string;
@@ -33,12 +33,19 @@ const Dropdown: React.FC<Props> = ({
     onSelect(value);
   };
 
+  const borderWidth = 1.3;
+
   return (
     <View className="relative">
       <View
-        className={`bg-white border-[1.3px] border-brand-black ${
-          isOpen ? "rounded-t-[10px] border-b-[0px]" : "rounded-[10px]"
+        className={`bg-white border-brand-black ${
+          isOpen ? "rounded-t-[10px]" : "rounded-[10px]"
         }`}
+        style={{
+          borderWidth,
+          borderBottomWidth: borderWidth,
+          borderBottomColor: isOpen ? "transparent" : undefined,
+        }}
       >
         <TouchableOpacity
           className="flex-row items-center px-4 py-2.5"
@@ -65,7 +72,10 @@ const Dropdown: React.FC<Props> = ({
       </View>
 
       {isOpen && (
-        <View className="absolute top-full left-0 right-0 bg-white border-[1.3px] border-t-0 border-brand-black rounded-b-[10px] z-10">
+        <View
+          className="absolute top-full left-0 right-0 bg-white border-[1.3px] border-t-0 border-brand-black rounded-b-[10px] z-10"
+          style={{marginTop: -borderWidth}}
+        >
           {options.map((option) => (
             <TouchableOpacity
               key={option.value}
