@@ -1,9 +1,10 @@
 import Input from "@/components/forms/Input";
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Dimensions,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -18,7 +19,7 @@ import { supabase } from "../supabase";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // Profanity filter
-import { Filter } from 'bad-words';
+import { Filter } from "bad-words";
 
 export default function CreateIdeaScreen() {
   const router = useRouter();
@@ -30,9 +31,13 @@ export default function CreateIdeaScreen() {
     description: "", // for input field errors
     general: "", // for other errors like system, etc
   });
+  const [isAnonymous, setIsAnonymous] = useState(false);
+
+  const screenHeight = Dimensions.get("window").height;
+  const textareaHeight = screenHeight * 0.25;
   const profanityFilter = new Filter();
 
-  const getLastFriday =() => {
+  const getLastFriday = () => {
     const today = new Date();
     const year = today.getFullYear();
     const month = today.getMonth();
@@ -47,6 +52,22 @@ export default function CreateIdeaScreen() {
   interface PredictResponse {
     prediction: string;
   }
+
+  useEffect(() => {
+    const checkAnonymousMode = async () => {
+      try {
+        const isAnonymousMode = await AsyncStorage.getItem("anonymous_mode");
+        if (isAnonymousMode === "true") {
+          setIsAnonymous(true);
+        } else {
+          setIsAnonymous(false);
+        }
+      } catch (error) {
+        console.error("Failed to check anonymous mode:", error);
+      }
+    };
+    checkAnonymousMode();
+  }, []);
 
   // const analyzeText = async (textToAnalyze: string): Promise<string | undefined> => {
   //   try {
@@ -77,8 +98,8 @@ export default function CreateIdeaScreen() {
     if (profanityFilter.isProfane(description)) {
       Alert.alert("Profanity languages are strictly prohibited");
       return;
-    };
-    
+    }
+
     // const sentiment = await analyzeText(description);
 
     // if (sentiment) {
@@ -105,13 +126,20 @@ export default function CreateIdeaScreen() {
 
       const lastFriday = getLastFriday();
 
+      // Hide manager's ID if in anonymous mode
+      const isAnonymousMode = await AsyncStorage.getItem("anonymous_mode");
+      let userId = storedUser.id;
+      if (isAnonymousMode === "true") {
+        userId = null;
+      }
+
       const { error } = await supabase.from("ideas").insert({
         company_id: storedUser.company_id,
         subject: subject.trim() || null,
         department: department.trim() || null,
         description: description.trim(),
         status: `Review date: ${lastFriday.toISOString().split("T")[0]}`,
-        created_by: storedUser.id,
+        created_by: userId,
         created_at: new Date().toISOString(),
       });
 
@@ -192,12 +220,10 @@ export default function CreateIdeaScreen() {
             </Text>
             <Input
               value={description}
-              onChangeText={
-                setDescription
-              }
+              onChangeText={setDescription}
               autoCapitalize="sentences"
               editable={!loading}
-              style={{ height: 200 }}
+              style={{ height: textareaHeight }}
               textAlignVertical="top"
               multiline={true}
               className="pt-4"
