@@ -34,9 +34,9 @@ export default function HomeScreen() {
   const [togglePage, setTogglePage] = useState<"all" | "following">("all");
   const [unfollowingIds, setUnfollowingIds] = useState<Set<string>>(new Set());
   const [isManager, setIsManager] = useState(false);
+
   const router = useRouter();
-  const [timeFilter, setTimeFilter] = useState<TimeFilter>("all");
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+
   const [searchQuery, setSearchQuery] = useState("");
   const [isFilterActive, setIsFilterActive] = useState(false);
   const [isTimeDropdownOpen, setIsTimeDropdownOpen] = useState(false);
@@ -57,11 +57,7 @@ export default function HomeScreen() {
 
   const [timeFilter, setTimeFilter] = useState<TimeFilter>("all");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [isFilterActive, setIsFilterActive] = useState(false);
-  const [showTimeDropdown, setShowTimeDropdown] = useState(false);
-  const [showStatusDropdown, setShowStatusDropdown] = useState(false);
-
+  
   const userFollowedIdeas = useCallback(async () => {
     const userProfileString = await AsyncStorage.getItem("user");
 
