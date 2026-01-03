@@ -179,8 +179,8 @@ const IdeaCard: React.FC<Props> = ({
               }
             />
           ) : (
-            <View className="bg-white border-[1.3px] border-brand-black rounded-[10px]">
-              <View className="flex-row items-center px-4 py-2.5">
+            <View className="bg-white border-[1px] border-brand-black rounded-[10px] px-4 py-2">
+              <View className="flex-row items-center">
                 <View className="flex-1 items-center">
                   <Text className="text-brand-blue text-sm font-semibold text-center">
                     {currentStatusLabel}
@@ -200,7 +200,7 @@ const IdeaCard: React.FC<Props> = ({
             }`}
           >
             <TouchableOpacity
-              className="flex-row items-center justify-center gap-1.5 px-3 py-2"
+              className="flex-row items-center justify-center gap-1.5 px-2 py-2"
               onPress={onComment}
               activeOpacity={0.7}
             >
@@ -221,7 +221,7 @@ const IdeaCard: React.FC<Props> = ({
             }`}
           >
             <TouchableOpacity
-              className="flex-row items-center justify-center px-3 py-2"
+              className="flex-row items-center justify-center px-2 py-2"
               onPress={handleFollowPress}
               activeOpacity={0.7}
               disabled={isFollowLoading}
