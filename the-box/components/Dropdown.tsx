@@ -33,7 +33,7 @@ const Dropdown: React.FC<Props> = ({
     onSelect(value);
   };
 
-  const borderWidth = 1.3;
+  const borderWidth = 1;
 
   return (
     <View className="relative">
@@ -48,7 +48,7 @@ const Dropdown: React.FC<Props> = ({
         }}
       >
         <TouchableOpacity
-          className="flex-row items-center px-4 py-2.5"
+          className="flex-row items-center px-4 py-2"
           onPress={toggleOpen}
           activeOpacity={disabled ? 1 : 0.8}
           disabled={disabled}

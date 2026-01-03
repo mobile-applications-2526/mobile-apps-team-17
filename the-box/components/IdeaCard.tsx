@@ -164,7 +164,7 @@ const IdeaCard: React.FC<Props> = ({
         </Text>
       </View>
 
-      <View className="flex-row items-center gap-2">
+      <View className="flex-row items-center gap-1.5">
        <View className="relative w-3/5">
           {isManager ? (
             <Dropdown
