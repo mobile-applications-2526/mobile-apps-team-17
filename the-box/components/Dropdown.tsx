@@ -73,7 +73,7 @@ const Dropdown: React.FC<Props> = ({
 
       {isOpen && (
         <View
-          className="absolute top-full left-0 right-0 bg-white border-[1.3px] border-t-0 border-brand-black rounded-b-[10px] z-10"
+          className="absolute top-full left-0 right-0 bg-white border-[1px] border-t-0 border-brand-black rounded-b-[10px] z-10"
           style={{marginTop: -borderWidth}}
         >
           {options.map((option) => (
@@ -83,7 +83,7 @@ const Dropdown: React.FC<Props> = ({
               onPress={() => handleSelect(option.value)}
               activeOpacity={0.8}
             >
-              <Text className="text-brand-blue text-sm font-semibold text-center">
+              <Text className="text-brand-blue text-sm font-semibold text-center mr-5">
                 {option.label}
               </Text>
             </TouchableOpacity>

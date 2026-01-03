@@ -146,7 +146,7 @@ const IdeaCard: React.FC<Props> = ({
     }));
   
   return (
-    <>
+    <View className="mb-1.5">
     <View className="flex-column gap-0.5 mx-4">
       <View className="bg-white rounded-[10px] border border-brand-black p-3 mb-1">
         <Text className="text-gray-500 text-xs mb-1">
@@ -292,7 +292,7 @@ const IdeaCard: React.FC<Props> = ({
           </View>
         </View>
       </Modal>
-    </>
+    </View>
   );
 };
 
