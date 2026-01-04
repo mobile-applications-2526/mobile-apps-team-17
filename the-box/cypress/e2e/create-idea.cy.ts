@@ -1,3 +1,4 @@
+import React from "react";
 describe("Create idea E2E tests", () => {
   beforeEach(() => {
     cy.visit("/");
