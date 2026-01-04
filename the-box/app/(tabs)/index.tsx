@@ -34,9 +34,10 @@ export default function HomeScreen() {
   const [error, setError] = useState<string | null>(null);
   const [togglePage, setTogglePage] = useState<"all" | "following">("all");
   const [unfollowingIds, setUnfollowingIds] = useState<Set<string>>(new Set());
+  const [isManager, setIsManager] = useState(false);
+
   const router = useRouter();
-  const [timeFilter, setTimeFilter] = useState<TimeFilter>("all");
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+
   const [searchQuery, setSearchQuery] = useState("");
   const [isFilterActive, setIsFilterActive] = useState(false);
   const [isTimeDropdownOpen, setIsTimeDropdownOpen] = useState(false);
@@ -55,7 +56,10 @@ export default function HomeScreen() {
     | "to_be_reviewed"
     | "commented_by_manager";
 
-  const userFollowedIdeas = async () => {
+  const [timeFilter, setTimeFilter] = useState<TimeFilter>("all");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  
+  const userFollowedIdeas = useCallback(async () => {
     const userProfileString = await AsyncStorage.getItem("user");
 
     if (userProfileString) {
@@ -87,7 +91,7 @@ export default function HomeScreen() {
         setFollowedIdeas(sortedFollowedIdeas);
       }
     }
-  };
+  }, []);
 
   // TODO - to implement
   const handleFollow = async (
@@ -194,6 +198,8 @@ export default function HomeScreen() {
         return;
       }
 
+      setIsManager((userProfile as any).role === 'manager');
+
       const { data, error } = await supabase
         .from("ideas")
         .select(
@@ -218,13 +224,14 @@ export default function HomeScreen() {
   useEffect(() => {
     load();
     userFollowedIdeas();
-  }, [load]);
+  }, [load, userFollowedIdeas]);
 
   // Refresh followed ideas when screen comes into focus (returning from discussion)
   useFocusEffect(
     useCallback(() => {
+      load();
       userFollowedIdeas();
-    }, [])
+    }, [load, userFollowedIdeas])
   );
 
   const onRefresh = async () => {
@@ -328,16 +335,41 @@ export default function HomeScreen() {
     [timeFilter, statusFilter, searchQuery]
   );
 
-  const filteredIdeas = useMemo(() => {
-    return applyFilters(ideas);
-  }, [ideas, applyFilters]);
+  const updateIdeaStatus = async (ideaId: string, newStatus: string) => {
+    const { error } = await supabase
+      .from("ideas")
+      .update({ status: newStatus })
+      .eq("id", ideaId);
 
-  const filteredFollowedIdeas = useMemo(() => {
-    const filtered = followedIdeas.filter(
-      (idea) => !unfollowingIds.has(String(idea.id))
+    if (error) {
+      throw error;
+    }
+
+    setIdeas((prev) =>
+      prev.map((idea) =>
+        idea.id === ideaId ? { ...idea, status: newStatus } : idea
+      )
     );
-    return applyFilters(filtered);
-  }, [followedIdeas, unfollowingIds, applyFilters]);
+
+    setFollowedIdeas((prev) =>
+      prev.map((idea) =>
+        idea.id === ideaId ? { ...idea, status: newStatus } : idea
+      )
+    );
+  };
+
+  const filteredIdeas = useMemo(
+    () => applyFilters(ideas),
+    [ideas, applyFilters]
+  );
+
+  const filteredFollowedIdeas = useMemo(
+    () =>
+      applyFilters(followedIdeas).filter(
+        (idea) => !unfollowingIds.has(String(idea.id))
+      ),
+    [followedIdeas, applyFilters, unfollowingIds]
+  );
 
   if (loading) {
     return <Splash />;
@@ -525,6 +557,7 @@ export default function HomeScreen() {
             renderItem={({ item }) => (
               <IdeaCard
                 idea={item}
+                isManager={isManager}
                 onComment={() => {
                   router.push({
                     pathname: "/discussion/[id]",
@@ -535,6 +568,7 @@ export default function HomeScreen() {
                 onFollow={(isCurrentlyFollowing) =>
                   handleFollow(item.id, isCurrentlyFollowing)
                 }
+                onChangeStatus={(newStatus) => updateIdeaStatus(item.id, newStatus)}
               />
             )}
             ListEmptyComponent={
@@ -565,6 +599,7 @@ export default function HomeScreen() {
             renderItem={({ item }) => (
               <IdeaCard
                 idea={item}
+                isManager={isManager}
                 onComment={() => {
                   router.push({
                     pathname: "/discussion/[id]",
@@ -575,6 +610,7 @@ export default function HomeScreen() {
                 onFollow={(isCurrentlyFollowing) =>
                   handleFollow(item.id, isCurrentlyFollowing)
                 }
+                onChangeStatus={(newStatus) => updateIdeaStatus(item.id, newStatus)}
               />
             )}
             ListEmptyComponent={
