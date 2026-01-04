@@ -1,7 +1,7 @@
 import React from 'react'
 import Splash from './Splash'
 
-describe('<Splash />', () => {
+describe('Splash component tests', () => {
   it('renders the splash screen container', () => {
     cy.mount(<Splash />)
     cy.getByTestId('splash-container').should('be.visible')

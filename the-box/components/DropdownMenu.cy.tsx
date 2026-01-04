@@ -1,6 +1,7 @@
+import React from "react";
 import CustomDropdown from "./DropdownMenu";
 
-describe("<CustomDropdown />", () => {
+describe("DropdownMenu component tests", () => {
   const mockOptions = [
     { label: "Today", value: "today" },
     { label: "This Week", value: "week" },

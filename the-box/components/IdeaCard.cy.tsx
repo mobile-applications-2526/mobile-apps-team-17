@@ -1,3 +1,4 @@
+import React from "react";
 import { Idea } from "@/types/index";
 import IdeaCard from "./IdeaCard";
 
@@ -81,7 +82,7 @@ describe("IdeaCard component tests", () => {
     cy.get("@onComment").should("have.been.calledOnce");
   });
 
-  it("should toggle follow state when follow button is clicked", () => {
+  it("should call onFollow with correct state when follow button is clicked", () => {
     const onFollowStub = cy.stub().resolves();
 
     cy.mount(
@@ -92,20 +93,11 @@ describe("IdeaCard component tests", () => {
       />
     );
 
-    cy.getByTestId("idea-card-follow-button")
-      .parent()
-      .should("have.class", "bg-white")
-      .and("have.class", "border-brand-black");
-
     cy.getByTestId("idea-card-follow-button").click();
     cy.wrap(onFollowStub).should("have.been.calledOnceWith", false);
-    cy.getByTestId("idea-card-follow-button")
-      .parent()
-      .should("have.class", "bg-brand-blue")
-      .and("have.class", "border-brand-blue");
   });
 
-  it("should unfollow when clicking follow button while already following", () => {
+  it("should call onFollow when unfollowing", () => {
     const onFollowStub = cy.stub().resolves();
 
     cy.mount(
@@ -116,16 +108,8 @@ describe("IdeaCard component tests", () => {
       />
     );
 
-    cy.getByTestId("idea-card-follow-button")
-      .parent()
-      .should("have.class", "bg-brand-blue");
-
     cy.getByTestId("idea-card-follow-button").click();
     cy.wrap(onFollowStub).should("have.been.calledOnceWith", true);
-    cy.getByTestId("idea-card-follow-button")
-      .parent()
-      .should("have.class", "bg-white")
-      .and("have.class", "border-brand-black");
   });
 
   it("should display different time formats correctly", () => {

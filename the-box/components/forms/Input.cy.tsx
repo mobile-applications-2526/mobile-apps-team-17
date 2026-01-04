@@ -1,6 +1,7 @@
+import React from "react";
 import Input from "./Input";
 
-describe("<Input />", () => {
+describe("Input component tests", () => {
   it("renders with placeholder", () => {
     cy.mount(<Input placeholder="Enter your email" testID="email-input" />);
 
