@@ -1,0 +1,52 @@
+[
+  {
+    "id": "idea-1",
+    "company_id": "company-123",
+    "subject": "Improve Break Room",
+    "description": "We should add a coffee machine and comfortable seating in the break room to improve employee satisfaction.",
+    "status": "to_be_reviewed",
+    "created_at": "2026-01-01T10:00:00Z",
+    "created_by": "user-1",
+    "department": "HR"
+  },
+  {
+    "id": "idea-2",
+    "company_id": "company-123",
+    "subject": null,
+    "description": "Can we implement flexible working hours? It would greatly help work-life balance.",
+    "status": "accepted",
+    "created_at": "2025-12-28T14:30:00Z",
+    "created_by": "user-2",
+    "department": "Engineering"
+  },
+  {
+    "id": "idea-3",
+    "company_id": "company-123",
+    "subject": "Team Building Event",
+    "description": "Monthly team building activities would strengthen team cohesion and boost morale.",
+    "status": "commented_by_manager",
+    "created_at": "2025-12-25T09:15:00Z",
+    "created_by": "user-3",
+    "department": "Marketing"
+  },
+  {
+    "id": "idea-4",
+    "company_id": "company-123",
+    "subject": "Parking Space Allocation",
+    "description": "The current parking system is unfair. We need a better allocation method.",
+    "status": "declined",
+    "created_at": "2025-12-20T16:45:00Z",
+    "created_by": null,
+    "department": "Operations"
+  },
+  {
+    "id": "idea-5",
+    "company_id": "company-123",
+    "subject": "Remote Work Tools",
+    "description": "Invest in better collaboration tools for remote team members. Current tools are outdated.",
+    "status": "to_be_reviewed",
+    "created_at": "2025-12-15T11:20:00Z",
+    "created_by": "user-1",
+    "department": "IT"
+  }
+]

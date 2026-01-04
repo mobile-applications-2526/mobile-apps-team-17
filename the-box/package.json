@@ -8,7 +8,15 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "cypress:component": "cypress run --component",
+    "cypress:component:open": "cypress open --component",
+    "cypress:e2e": "cypress run --e2e",
+    "cypress:e2e:open": "cypress open --e2e",
+    "test:component": "npm run cypress:component",
+    "test:e2e": "npm run cypress:e2e",
+    "test:all": "npm run test:component && npm run test:e2e",
+    "test:open": "cypress open"
   },
   "dependencies": {
     "@expo/react-native-action-sheet": "^4.1.1",

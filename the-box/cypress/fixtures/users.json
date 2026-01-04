@@ -1,0 +1,32 @@
+{
+  "employee": {
+    "id": "user-employee-1",
+    "company_id": "company-123",
+    "role": "employee",
+    "full_name": null,
+    "email": null,
+    "created_at": "2025-12-01T10:00:00Z",
+    "last_login": "2026-01-04T08:00:00Z",
+    "is_active": true
+  },
+  "manager": {
+    "id": "user-manager-1",
+    "company_id": "company-123",
+    "role": "manager",
+    "full_name": "John Manager",
+    "email": "manager@company.com",
+    "created_at": "2025-11-01T10:00:00Z",
+    "last_login": "2026-01-04T09:00:00Z",
+    "is_active": true
+  },
+  "employeeWithName": {
+    "id": "user-employee-2",
+    "company_id": "company-123",
+    "role": "employee",
+    "full_name": "Jane Employee",
+    "email": "jane@company.com",
+    "created_at": "2025-12-15T10:00:00Z",
+    "last_login": "2026-01-03T14:30:00Z",
+    "is_active": true
+  }
+}

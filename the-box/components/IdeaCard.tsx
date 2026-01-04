@@ -1,6 +1,12 @@
 import { Idea } from "@/types/index";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Image, Text, TouchableOpacity, View } from "react-native";
+import {
+  ActivityIndicator,
+  Image,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import BellActiveIcon from "../assets/images/bell-active-icon.png";
 import BellIcon from "../assets/images/bell-icon.png";
 import CommentActiveIcon from "../assets/images/comment-active-icon.png";
@@ -24,7 +30,6 @@ const IdeaCard: React.FC<Props> = ({
   onFollow,
 }) => {
   const [isFollowing, setIsFollowing] = useState(initialIsFollowing);
-
 
   useEffect(() => {
     setIsFollowing(initialIsFollowing);
@@ -56,8 +61,8 @@ const IdeaCard: React.FC<Props> = ({
     if (diffHours < 1) return `${diffMinutes}m ago`;
     if (diffHours < 24) return `${diffHours}h ago`;
     if (diffDays === 1) return "1 day ago";
-    
-      return `${diffDays} days ago`;
+
+    return `${diffDays} days ago`;
   };
 
   const capitalizeStatus = (status: string) => {
@@ -66,26 +71,44 @@ const IdeaCard: React.FC<Props> = ({
   };
 
   return (
-    <View className="flex-column gap-0.5 mx-4">
-      <View className="bg-white rounded-[10px] border border-brand-black p-3 mb-1">
-        <Text className="text-gray-500 text-xs mb-1">
+    <View className="flex-column gap-0.5 mx-4" testID={`idea-card-${idea.id}`}>
+      <View
+        className="bg-white rounded-[10px] border border-brand-black p-3 mb-1"
+        testID="idea-card-content"
+      >
+        <Text className="text-gray-500 text-xs mb-1" testID="idea-card-date">
           {formatDate(idea.created_at)}
         </Text>
 
         {idea.subject && (
-          <Text className="text-brand-black text-lg font-semibold mb-1">
+          <Text
+            className="text-brand-black text-lg font-semibold mb-1"
+            testID="idea-card-subject"
+          >
             {idea.subject}
           </Text>
         )}
 
-        <Text className="text-brand-black text-lg leading-5 mb-1">
+        <Text
+          className="text-brand-black text-lg leading-5 mb-1"
+          testID="idea-card-description"
+        >
           {idea.description}
         </Text>
       </View>
 
-      <View className="flex-row items-center gap-1.5">
-        <View className="rounded-[10px] px-4 py-2.5 border border-brand-black bg-white">
-          <Text className="text-brand-blue text-sm font-semibold">
+      <View
+        className="flex-row items-center gap-1.5"
+        testID="idea-card-actions"
+      >
+        <View
+          className="rounded-[10px] px-4 py-2.5 border border-brand-black bg-white"
+          testID="idea-card-status-badge"
+        >
+          <Text
+            className="text-brand-blue text-sm font-semibold"
+            testID="idea-card-status"
+          >
             {capitalizeStatus(idea.status)}
           </Text>
         </View>
@@ -102,6 +125,7 @@ const IdeaCard: React.FC<Props> = ({
               className="flex-row items-center justify-center gap-1.5 px-3 py-2"
               onPress={onComment}
               activeOpacity={0.7}
+              testID="idea-card-comment-button"
             >
               <Image
                 source={isCommentActive ? CommentActiveIcon : CommentIcon}
@@ -115,8 +139,8 @@ const IdeaCard: React.FC<Props> = ({
               isFollowLoading
                 ? "border-brand-black bg-white"
                 : isFollowing
-                  ? "border-brand-blue bg-brand-blue"
-                  : "border-brand-black bg-white"
+                ? "border-brand-blue bg-brand-blue"
+                : "border-brand-black bg-white"
             }`}
           >
             <TouchableOpacity
@@ -124,9 +148,14 @@ const IdeaCard: React.FC<Props> = ({
               onPress={handleFollowPress}
               activeOpacity={0.7}
               disabled={isFollowLoading}
+              testID="idea-card-follow-button"
             >
               {isFollowLoading ? (
-                <ActivityIndicator size="small" color="#1877F2" />
+                <ActivityIndicator
+                  size="small"
+                  color="#1877F2"
+                  testID="idea-card-follow-loading"
+                />
               ) : (
                 <Image
                   source={isFollowing ? BellActiveIcon : BellIcon}

@@ -33,25 +33,37 @@ export default function Splash() {
   }, []);
 
   return (
-    <View className="flex-1 items-center justify-center bg-white">
+    <View
+      className="flex-1 items-center justify-center bg-white"
+      testID="splash-container"
+    >
       <Animated.View
         style={{
           opacity: fadeAnim,
           transform: [{ scale: scaleAnim }],
         }}
         className="items-center"
+        testID="splash-animated-content"
       >
         <View className="">
           <Image
             source={require("../assets/images/the-box-splash.png")}
             style={{ width: logoWidth, height: logoHeight }}
             resizeMode="contain"
+            testID="splash-logo"
           />
         </View>
-        <Text className=" text-xl text-black -mt-32 mb-20 font-semibold">
+        <Text
+          className=" text-xl text-black -mt-32 mb-20 font-semibold"
+          testID="splash-tagline"
+        >
           Just say it.<Text className="text-blue-500"> Anonymously.</Text>
         </Text>
-        <ActivityIndicator className="text-blue-500" size="large" />
+        <ActivityIndicator
+          className="text-blue-500"
+          size="large"
+          testID="splash-loading"
+        />
       </Animated.View>
     </View>
   );
