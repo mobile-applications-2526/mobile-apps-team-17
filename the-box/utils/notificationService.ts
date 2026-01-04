@@ -63,7 +63,7 @@ export async function scheduleDailyNotificationCheck() {
         // hour: 10,
         // minute: 0,
         type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
-        seconds: 30,
+        seconds: 120,
         repeats: true,
       },
     });
@@ -165,5 +165,40 @@ export function handleNotificationResponse(response: Notifications.NotificationR
   } catch (error) {
     console.error('Error handling notification response:', error);
     return null;
+  }
+}
+
+export async function notifyStatusUpdate(ideaId: string, newStatus: string) {
+  try {
+    const userString = await AsyncStorage.getItem('user');
+    if (!userString) return;
+
+    const user = JSON.parse(userString);
+    
+    // Check if the current user is following this idea
+    const { data: isFollowing, error } = await supabase
+      .from('users_followed_ideas')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('idea_id', ideaId)
+      .single();
+
+    if (error || !isFollowing) {
+      return; // User is not following this idea
+    }
+
+    // Schedule notification for status update
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: 'Status Update',
+        body: `An idea you follow has been ${newStatus}`,
+        data: { ideaId, type: 'status_update' },
+      },
+      trigger: null, // Send immediately
+    });
+
+    console.log('Status update notification sent');
+  } catch (error) {
+    console.error('Error sending status update notification:', error);
   }
 }

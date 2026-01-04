@@ -24,7 +24,7 @@ import BackIcon from "../../assets/images/back-icon.png";
 import FunnelIconActive from "../../assets/images/funnel-simple-2.png";
 import FunnelIcon from "../../assets/images/funnel-simple.png";
 import Search from "../../assets/images/search-icon.png";
-import { checkAndScheduleNotifications } from "@/utils/notificationService";
+import { checkAndScheduleNotifications, notifyStatusUpdate } from "@/utils/notificationService";
 
 export default function HomeScreen() {
   const [ideas, setIdeas] = useState<Idea[]>([]);
@@ -213,7 +213,6 @@ export default function HomeScreen() {
       } else {
         setIdeas(data ?? []);
       }
-      await checkAndScheduleNotifications();
     } catch (err: any) {
       setError(err.message ?? "Unknown error");
     } finally {
@@ -356,6 +355,9 @@ export default function HomeScreen() {
         idea.id === ideaId ? { ...idea, status: newStatus } : idea
       )
     );
+    
+    // Send notification to followers
+    await notifyStatusUpdate(ideaId, newStatus);
   };
 
   const filteredIdeas = useMemo(
