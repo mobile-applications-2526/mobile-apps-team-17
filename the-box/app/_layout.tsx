@@ -13,6 +13,7 @@ import {
   requestNotificationPermissions, 
   scheduleDailyNotificationCheck, 
   checkAndScheduleNotifications,
+  checkReviewDatesOnAppOpen,
   handleNotificationResponse 
 } from "@/utils/notificationService";
 
@@ -47,6 +48,7 @@ export default function RootLayout() {
       if (hasPermission) {
         await scheduleDailyNotificationCheck();
         await checkAndScheduleNotifications();
+        await checkReviewDatesOnAppOpen();
       }
     };
 

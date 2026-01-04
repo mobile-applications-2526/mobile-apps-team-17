@@ -59,18 +59,84 @@ export async function scheduleDailyNotificationCheck() {
         data: { type: 'daily_check' },
       },
       trigger: {
-        // type: Notifications.SchedulableTriggerInputTypes.CALENDAR,
-        // hour: 10,
-        // minute: 0,
-        type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
-        seconds: 120,
-        repeats: true,
+        type: Notifications.SchedulableTriggerInputTypes.CALENDAR,
+        hour: 10,
+        minute: 0,
       },
     });
 
     console.log('Daily notification check scheduled for 10:00 AM');
   } catch (error) {
     console.error('Error scheduling daily notifications:', error);
+  }
+}
+
+async function checkReviewDateNotifications(userId: string) {
+  try {
+    // Get all ideas from user's company with "Review date..." status
+    const { data: userProfile } = await supabase
+      .from('users')
+      .select('company_id')
+      .eq('id', userId)
+      .single();
+
+    if (!userProfile) return;
+
+    const { data: ideas, error } = await supabase
+      .from('ideas')
+      .select('id, status, subject, description')
+      .eq('company_id', userProfile.company_id)
+      .like('status', 'Review date%');
+
+    if (error || !ideas || ideas.length === 0) {
+      return;
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    for (const idea of ideas) {
+      // Extract date from status (format: "Review date: YYYY-MM-DD")
+      const dateMatch = idea.status.match(/Review date[:\s]+(\d{4}-\d{2}-\d{2})/i);
+      if (!dateMatch) continue;
+
+      const reviewDate = new Date(dateMatch[1]);
+      reviewDate.setHours(0, 0, 0, 0);
+
+      const diffTime = reviewDate.getTime() - today.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      let notificationTitle = '';
+      let notificationBody = '';
+
+      if (diffDays === 0) {
+        // Review date is today
+        notificationTitle = 'Review Date Today';
+        notificationBody = `The review date for "${idea.subject || 'an idea'}" is today!`;
+      } else if (diffDays === 1) {
+        // Review date is tomorrow (1 day away)
+        notificationTitle = 'Review Date Tomorrow';
+        notificationBody = `The review date for "${idea.subject || 'an idea'}" is tomorrow`;
+      } else if (diffDays === 7) {
+        // Review date is 1 week away
+        notificationTitle = 'Review Date in 1 Week';
+        notificationBody = `The review date for "${idea.subject || 'an idea'}" is in 1 week`;
+      }
+
+      // Send notification if it matches one of our criteria
+      if (notificationTitle && notificationBody) {
+        await Notifications.scheduleNotificationAsync({
+          content: {
+            title: notificationTitle,
+            body: notificationBody,
+            data: { ideaId: idea.id, type: 'review_date_reminder' },
+          },
+          trigger: null, // Send immediately
+        });
+      }
+    }
+  } catch (error) {
+    console.error('Error checking review date notifications:', error);
   }
 }
 
@@ -149,6 +215,8 @@ export async function checkAndScheduleNotifications() {
       }
     }
 
+    await checkReviewDateNotifications(user.id);
+
     console.log('Notifications scheduled successfully');
   } catch (error) {
     console.error('Error checking and scheduling notifications:', error);
@@ -165,6 +233,58 @@ export function handleNotificationResponse(response: Notifications.NotificationR
   } catch (error) {
     console.error('Error handling notification response:', error);
     return null;
+  }
+}
+
+// New function to check review dates on app open
+export async function checkReviewDatesOnAppOpen() {
+  try {
+    const userString = await AsyncStorage.getItem('user');
+    if (!userString) return;
+
+    const user = JSON.parse(userString);
+    await checkReviewDateNotifications(user.id);
+  } catch (error) {
+    console.error('Error checking review dates on app open:', error);
+  }
+}
+
+export async function notifyNewComment(ideaId: string) {
+  try {
+    const userString = await AsyncStorage.getItem('user');
+    if (!userString) return;
+
+    const currentUser = JSON.parse(userString);
+    
+    // Get all users following this idea (except the commenter)
+    const { data: followers, error } = await supabase
+      .from('users_followed_ideas')
+      .select('user_id')
+      .eq('idea_id', ideaId)
+      .neq('user_id', currentUser.id);
+
+    if (error) {
+      console.error('Error fetching followers:', error);
+      return;
+    }
+
+    if (!followers || followers.length === 0) {
+      return; // No one is following this idea
+    }
+
+    // Send notification immediately to current user (local notification)
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: 'New Comment',
+        body: 'Someone commented on an idea you follow',
+        data: { ideaId, type: 'new_comment' },
+      },
+      trigger: null, // Send immediately
+    });
+
+    console.log(`New comment notification sent for idea ${ideaId}`);
+  } catch (error) {
+    console.error('Error sending new comment notification:', error);
   }
 }
 

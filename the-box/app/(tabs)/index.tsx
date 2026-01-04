@@ -24,7 +24,7 @@ import BackIcon from "../../assets/images/back-icon.png";
 import FunnelIconActive from "../../assets/images/funnel-simple-2.png";
 import FunnelIcon from "../../assets/images/funnel-simple.png";
 import Search from "../../assets/images/search-icon.png";
-import { checkAndScheduleNotifications, notifyStatusUpdate } from "@/utils/notificationService";
+import { checkAndScheduleNotifications, notifyStatusUpdate, checkReviewDatesOnAppOpen } from "@/utils/notificationService";
 
 export default function HomeScreen() {
   const [ideas, setIdeas] = useState<Idea[]>([]);
@@ -230,6 +230,8 @@ export default function HomeScreen() {
     useCallback(() => {
       load();
       userFollowedIdeas();
+      // Check review dates when home screen comes into focus
+      checkReviewDatesOnAppOpen();
     }, [load, userFollowedIdeas])
   );
 
