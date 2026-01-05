@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Animated, Image, Text, TouchableOpacity, View } from "react-native";
 import ArrowUpIcon from "../assets/images/arrow-up-icon.png";
 import DropDownIcon from "../assets/images/drop-down-icon.png";
@@ -75,6 +75,7 @@ export default function CustomDropdown({
         position: "relative",
         zIndex: isOpen ? 1000 : 1,
       }}
+      testID="dropdown-container"
     >
       <View
         className="bg-white border border-brand-blue"
@@ -84,21 +85,25 @@ export default function CustomDropdown({
           borderBottomRightRadius: isOpen ? 0 : 25,
           borderBottomWidth: isOpen ? 0 : 1,
         }}
+        testID="dropdown-header"
       >
         <TouchableOpacity
           onPress={handleToggle}
           className="flex-row items-center justify-between px-4 py-2"
+          testID="dropdown-toggle"
         >
           <Text
             className="text-brand-blue font-medium flex-1 text-center"
             numberOfLines={isOpen ? undefined : 1}
             ellipsizeMode="tail"
+            testID="dropdown-selected-text"
           >
             {displayText}
           </Text>
           <View
             className="w-6 h-6 items-center justify-center"
             style={{ borderRadius: 12 }}
+            testID="dropdown-icon"
           >
             <Image
               source={isOpen ? ArrowUpIcon : DropDownIcon}
@@ -120,6 +125,7 @@ export default function CustomDropdown({
             borderBottomLeftRadius: 25,
             borderBottomRightRadius: 25,
           }}
+          testID="dropdown-options"
         >
           {availableOptions.map((option) => (
             <View key={option.value}>
@@ -127,9 +133,11 @@ export default function CustomDropdown({
               <TouchableOpacity
                 onPress={() => handleSelect(option.value)}
                 className="px-4 py-2"
+                testID={`dropdown-option-${option.value}`}
               >
                 <Text
                   className="text-brand-blue font-medium text-center"
+                  testID={`dropdown-option-text-${option.value}`}
                 >
                   {option.label}
                 </Text>

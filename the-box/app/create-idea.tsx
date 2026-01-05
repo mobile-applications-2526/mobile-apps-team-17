@@ -185,15 +185,17 @@ export default function CreateIdeaScreen() {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
       className="flex-1 bg-white"
+      testID="create-idea-screen"
     >
       <ScrollView
         keyboardShouldPersistTaps="handled"
         className="flex-1"
         contentContainerStyle={{ paddingBottom: 150 }}
+        testID="create-idea-scroll-view"
       >
         <View className="bg-white p-6">
           {errors.general && (
-            <View className="mb-3 px-1">
+            <View className="mb-3 px-1" testID="create-idea-general-error">
               <Text className="text-red-500 text-sm font-sf-pro">
                 {errors.general}
               </Text>
@@ -210,6 +212,7 @@ export default function CreateIdeaScreen() {
               onChangeText={setSubject}
               autoCapitalize="sentences"
               editable={!loading}
+              testID="create-idea-subject-input"
             />
           </View>
 
@@ -227,6 +230,7 @@ export default function CreateIdeaScreen() {
               textAlignVertical="top"
               multiline={true}
               className="pt-4"
+              testID="create-idea-description-input"
             />
           </View>
         </View>
@@ -242,6 +246,7 @@ export default function CreateIdeaScreen() {
             shadowRadius: 30,
             elevation: 5,
           }}
+          testID="create-idea-footer"
         >
           <View className="flex-row gap-3">
             <TouchableOpacity
@@ -251,9 +256,10 @@ export default function CreateIdeaScreen() {
               onPress={handleSubmit}
               disabled={loading}
               activeOpacity={0.8}
+              testID="create-idea-submit-button"
             >
               {loading ? (
-                <ActivityIndicator color="white" />
+                <ActivityIndicator color="white" testID="create-idea-loading" />
               ) : (
                 <>
                   <Image
@@ -274,6 +280,7 @@ export default function CreateIdeaScreen() {
               onPress={handleCancel}
               disabled={loading}
               activeOpacity={0.8}
+              testID="create-idea-cancel-button"
             >
               <Image source={ReturnIcon} style={{ width: 24, height: 24 }} />
               <View className="absolute inset-0 flex-row items-center justify-center ml-3">
