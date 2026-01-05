@@ -45,8 +45,21 @@
           }
         }
       ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/more-icon.png",
+          "color": "#1877F2"
+        }
+      ],
       "expo-sqlite"
     ],
+    "notification": {
+      "icon": "./assets/images/more-icon.png",
+      "color": "#1877F2",
+      "androidMode": "default",
+      "androidCollapsedTitle": "The Box"
+    },
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true

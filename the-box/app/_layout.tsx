@@ -1,6 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Stack, usePathname, useRouter, useSegments } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Image, TouchableOpacity, View } from "react-native";
 import { ActionSheetProvider } from "@expo/react-native-action-sheet";
 import CustomBackIcon from "../assets/images/back-icon.png";
@@ -8,6 +8,14 @@ import Splash from "../components/Splash";
 import "../global.css";
 import PageHeader from "@/components/PageHeader";
 import Incognito from "../assets/images/incognito.png";
+import * as Notifications from 'expo-notifications';
+import { 
+  requestNotificationPermissions, 
+  scheduleDailyNotificationCheck, 
+  checkAndScheduleNotifications,
+  checkReviewDatesOnAppOpen,
+  handleNotificationResponse 
+} from "@/utils/notificationService";
 
 const CustomLeftButton = () => {
   const router = useRouter();
@@ -31,6 +39,46 @@ export default function RootLayout() {
   const pathname = usePathname();
   const router = useRouter();
   const [isAnonymous, setIsAnonymous] = useState(false);
+  const notificationListener = useRef<any>(null);
+  const responseListener = useRef<any>(null);
+
+  useEffect(() => {
+    const initNotifications = async () => {
+      const hasPermission = await requestNotificationPermissions();
+      if (hasPermission) {
+        await scheduleDailyNotificationCheck();
+        await checkAndScheduleNotifications();
+        await checkReviewDatesOnAppOpen();
+      }
+    };
+
+    initNotifications();
+
+    // Listen for notifications when app is in foreground
+    notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
+      console.log('Notification received:', notification);
+    });
+
+    // Listen for notification responses (when user taps notification)
+    responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
+      const ideaId = handleNotificationResponse(response);
+      if (ideaId) {
+        router.push({
+          pathname: '/discussion/[id]',
+          params: { id: ideaId },
+        });
+      }
+    });
+
+    return () => {
+      if (notificationListener.current) {
+        notificationListener.current.remove();
+      }
+      if (responseListener.current) {
+        responseListener.current.remove();
+      }
+    };
+  }, []);
 
   useEffect(() => {
         const checkAnonymous = async () => {

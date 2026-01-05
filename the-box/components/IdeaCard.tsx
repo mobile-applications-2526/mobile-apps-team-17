@@ -3,10 +3,13 @@ import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Image,
+  Modal,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import Dropdown from "./Dropdown";
+import DropdownIcon from "../assets/images/back-icon.png";
 import BellActiveIcon from "../assets/images/bell-active-icon.png";
 import BellIcon from "../assets/images/bell-icon.png";
 import CommentActiveIcon from "../assets/images/comment-active-icon.png";
@@ -16,20 +19,28 @@ type Props = {
   idea: Idea;
   initialIsFollowing: boolean;
   isCommentActive?: boolean;
+  isManager?: boolean;
   isFollowLoading?: boolean;
   onComment?: () => void;
   onFollow?: (isCurrentlyFollowing: boolean) => Promise<void>;
+  onChangeStatus?: (newStatus: string) => Promise<void>;
 };
 
 const IdeaCard: React.FC<Props> = ({
   idea,
   initialIsFollowing,
   isCommentActive = false,
+  isManager = false,
   isFollowLoading = false,
   onComment,
   onFollow,
+  onChangeStatus,
 }) => {
   const [isFollowing, setIsFollowing] = useState(initialIsFollowing);
+  const [isStatusModalVisible, setIsStatusModalVisible] = useState(false);
+  const [currentStatus, setCurrentStatus] = useState(idea.status);
+  const [pendingStatus, setPendingStatus] = useState<string | null>(null);
+
 
   useEffect(() => {
     setIsFollowing(initialIsFollowing);
@@ -65,18 +76,80 @@ const IdeaCard: React.FC<Props> = ({
     return `${diffDays} days ago`;
   };
 
+  const formatReviewDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const day = `${date.getDate()}`.padStart(2, "0");
+    const month = `${date.getMonth() + 1}`.padStart(2, "0");
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+
+  const reviewDate = formatReviewDate(
+    (idea as any).review_date ?? idea.created_at
+  );
+
+  useEffect(() => {
+    setCurrentStatus(idea.status);
+  }, [idea.status]);
+
   const capitalizeStatus = (status: string) => {
     if (!status) return "";
     return status.charAt(0).toUpperCase() + status.slice(1);
   };
 
+  const openStatusModal = (status: string) => {
+    setPendingStatus(status);
+    setIsStatusModalVisible(true);
+  };
+
+  const handleConfirmStatus = async () => {
+    if (!pendingStatus) {
+      setIsStatusModalVisible(false);
+      return;
+    }
+
+    const previousStatus = currentStatus;
+    const newStatus = pendingStatus;
+
+    setCurrentStatus(newStatus);
+    setIsStatusModalVisible(false);
+
+    if (onChangeStatus) {
+      try {
+        await onChangeStatus(newStatus);
+      } catch (error) {
+        console.error("Failed to change status:", error);
+        setCurrentStatus(previousStatus);
+      }
+    }
+    
+    setPendingStatus(null);
+  };
+
+  const handleCancelStatus = () => {
+    setPendingStatus(null);
+    setIsStatusModalVisible(false);
+  };
+
+  const displayPendingStatus = capitalizeStatus(pendingStatus || currentStatus);
+  const currentStatusLabel =
+    currentStatus === "accepted" || currentStatus === "declined"
+      ? capitalizeStatus(currentStatus)
+      : currentStatus === "commented by manager"
+        ? "Commented by manager"
+        : `Review date: ${reviewDate}`;
+  const statusOptions = ["accepted", "declined"]
+    .filter((status) => status !== currentStatus)
+    .map((status) => ({
+      label: capitalizeStatus(status),
+      value: status,
+    }));
+  
   return (
-    <View className="flex-column gap-0.5 mx-4" testID={`idea-card-${idea.id}`}>
-      <View
-        className="bg-white rounded-[10px] border border-brand-black p-3 mb-1"
-        testID="idea-card-content"
-      >
-        <Text className="text-gray-500 text-xs mb-1" testID="idea-card-date">
+    <View className="mb-1.5">
+    <View className="flex-column gap-0.5 mx-4">
+      <View className="bg-white rounded-[10px] border border-brand-black p-3 mb-1">
+        <Text className="text-gray-500 text-xs mb-1">
           {formatDate(idea.created_at)}
         </Text>
 
@@ -97,20 +170,31 @@ const IdeaCard: React.FC<Props> = ({
         </Text>
       </View>
 
-      <View
-        className="flex-row items-center gap-1.5"
-        testID="idea-card-actions"
-      >
-        <View
-          className="rounded-[10px] px-4 py-2.5 border border-brand-black bg-white"
-          testID="idea-card-status-badge"
-        >
-          <Text
-            className="text-brand-blue text-sm font-semibold"
-            testID="idea-card-status"
-          >
-            {capitalizeStatus(idea.status)}
-          </Text>
+      <View className="flex-row items-center gap-1.5">
+       <View className="relative w-3/5">
+          {isManager ? (
+            <Dropdown
+              disabled={!isManager}
+              options={statusOptions}
+              onSelect={openStatusModal}
+              iconSource={DropdownIcon}
+              triggerContent={
+                <Text className="text-brand-blue text-sm font-semibold text-center">
+                  {currentStatusLabel}
+                </Text>
+              }
+            />
+          ) : (
+            <View className="bg-white border-[1px] border-brand-black rounded-[10px] px-4 py-2">
+              <View className="flex-row items-center">
+                <View className="flex-1 items-center">
+                  <Text className="text-brand-blue text-sm font-semibold text-center">
+                    {currentStatusLabel}
+                  </Text>
+                </View>
+              </View>
+            </View>
+          )}
         </View>
 
         <View className="flex-1 flex-row gap-1.5">
@@ -122,7 +206,7 @@ const IdeaCard: React.FC<Props> = ({
             }`}
           >
             <TouchableOpacity
-              className="flex-row items-center justify-center gap-1.5 px-3 py-2"
+              className="flex-row items-center justify-center gap-1.5 px-2 py-2"
               onPress={onComment}
               activeOpacity={0.7}
               testID="idea-card-comment-button"
@@ -144,7 +228,7 @@ const IdeaCard: React.FC<Props> = ({
             }`}
           >
             <TouchableOpacity
-              className="flex-row items-center justify-center px-3 py-2"
+              className="flex-row items-center justify-center px-2 py-2"
               onPress={handleFollowPress}
               activeOpacity={0.7}
               disabled={isFollowLoading}
@@ -166,6 +250,60 @@ const IdeaCard: React.FC<Props> = ({
           </View>
         </View>
       </View>
+    </View>
+    
+      <Modal
+        visible={isStatusModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={handleCancelStatus}
+      >
+        <View className="flex-1 bg-black/40 justify-center items-center">
+          <View className="w-9/12 bg-white rounded-[20px] p-5">
+            <Text className="text-center text-base font-semibold mb-4">
+              Changing this post&apos;s status
+            </Text>
+
+            <Text className="text-center text-brand-blue text-xl font-bold mb-2">
+              {currentStatusLabel}
+            </Text>
+
+            <View className="items-center mb-2">
+              <Image
+                source={DropdownIcon}
+                style={{ width: 28, height: 28, transform: [{ rotate: "-90deg" }] }}
+                resizeMode="contain"
+              />
+            </View>
+
+            <Text className="text-center text-brand-blue text-xl font-bold mb-6">
+              {displayPendingStatus}
+            </Text>
+
+            <View className="flex-row justify-between gap-3">
+              <TouchableOpacity
+                className="flex-1 bg-brand-blue rounded-[16px] py-3 items-center"
+                onPress={handleConfirmStatus}
+                activeOpacity={0.8}
+              >
+                <Text className="text-white text-base font-semibold">
+                  Confirm
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                className="flex-1 border border-gray-400 rounded-[16px] py-3 items-center"
+                onPress={handleCancelStatus}
+                activeOpacity={0.8}
+              >
+                <Text className="text-gray-600 text-base font-semibold">
+                  Cancel
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
