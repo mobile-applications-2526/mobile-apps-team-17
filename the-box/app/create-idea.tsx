@@ -1,6 +1,7 @@
 import Input from "@/components/forms/Input";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -16,7 +17,6 @@ import {
 import PaperPlaneIcon from "../assets/images/paper-plane-icon.png";
 import ReturnIcon from "../assets/images/return-icon.png";
 import { supabase } from "../supabase";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // Profanity filter
 import { Filter } from "bad-words";
@@ -133,17 +133,35 @@ export default function CreateIdeaScreen() {
         userId = null;
       }
 
-      const { error } = await supabase.from("ideas").insert({
-        company_id: storedUser.company_id,
-        subject: subject.trim() || null,
-        department: department.trim() || null,
-        description: description.trim(),
-        status: `Review date: ${lastFriday.toISOString().split("T")[0]}`,
-        created_by: userId,
-        created_at: new Date().toISOString(),
-      });
+      const { data: newIdea, error } = await supabase
+        .from("ideas")
+        .insert({
+          company_id: storedUser.company_id,
+          subject: subject.trim() || null,
+          department: department.trim() || null,
+          description: description.trim(),
+          status: `Review date: ${lastFriday.toISOString().split("T")[0]}`,
+          created_by: userId,
+          created_at: new Date().toISOString(),
+        })
+        .select()
+        .single();
 
       if (error) throw error;
+
+      // auto-follow the idea if user not anonymous
+      if (newIdea && userId) {
+        const { error: followError } = await supabase
+          .from("users_followed_ideas")
+          .insert({
+            user_id: storedUser.id,
+            idea_id: newIdea.id,
+          });
+
+        if (followError) {
+          console.error("Error auto-following idea:", followError);
+        }
+      }
 
       Alert.alert("Success", "Your idea has been submitted!", [
         {
