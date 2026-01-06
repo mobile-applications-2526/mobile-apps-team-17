@@ -19,6 +19,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import AddIcon from "../../assets/images/add-icon.png";
 import ReturnIcon from "../../assets/images/return-icon.png";
+import { trackStatusChange } from "@/utils/notificationService";
 
 export default function DiscussionScreen() {
   const { id } = useLocalSearchParams();
@@ -147,7 +148,76 @@ export default function DiscussionScreen() {
 
   useEffect(() => {
     loadIdeaAndComments();
-  }, [loadIdeaAndComments]);
+
+    // real-time updates for comments
+    const commentsChannel = supabase
+      .channel(`comments-${id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "comments",
+          filter: `idea_id=eq.${id}`,
+        },
+        async (payload) => {
+          const newComment = payload.new as any;
+
+          // fetch user info if comment is by manager
+          let commentWithUser = {
+            ...newComment,
+            user_name: null,
+            user_department: null,
+          };
+
+          if (newComment.created_by) {
+            const { data: userData } = await supabase
+              .from("users")
+              .select("full_name, department")
+              .eq("id", newComment.created_by)
+              .single();
+
+            if (userData) {
+              commentWithUser = {
+                ...newComment,
+                user_name: userData.full_name,
+                user_department: userData.department,
+              };
+            }
+          }
+
+          // to prevent duplicates
+          setComments((prev) => {
+            const exists = prev.some((c) => c.id === commentWithUser.id);
+            if (exists) return prev;
+            return [commentWithUser, ...prev];
+          });
+        }
+      )
+      .subscribe();
+
+    // real-time updates for idea status
+    const ideaChannel = supabase
+      .channel(`idea-${id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "ideas",
+          filter: `id=eq.${id}`,
+        },
+        (payload) => {
+          const updatedIdea = payload.new as any;
+          setIdea(updatedIdea);
+        }
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(commentsChannel);
+      supabase.removeChannel(ideaChannel);
+    };
+  }, [loadIdeaAndComments, id]);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -213,6 +283,8 @@ export default function DiscussionScreen() {
       }
 
       if (isManager) {
+        trackStatusChange(id as string);
+
         const { error: updateError } = await supabase
           .from("ideas")
           .update({ status: "commented by manager" })

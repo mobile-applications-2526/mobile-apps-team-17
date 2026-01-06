@@ -296,6 +296,12 @@ export async function setupRealtimeNotifications() {
         async (payload) => {
           const newComment = payload.new as any;
 
+          // don't notify if user made the comment themselves
+          const isOwnComment =
+            newComment.created_by && newComment.created_by === user.id;
+          if (isOwnComment) return;
+
+          // check if user is following this idea
           const { data: isFollowing } = await supabase
             .from("users_followed_ideas")
             .select("id")
@@ -303,10 +309,8 @@ export async function setupRealtimeNotifications() {
             .eq("user_id", user.id)
             .single();
 
-          const isOwnComment = newComment.created_by === user.id;
-
-          // only notify if following and not user's own comment
-          if (isFollowing && !isOwnComment) {
+          // only notify if following
+          if (isFollowing) {
             await Notifications.scheduleNotificationAsync({
               content: {
                 title: "New Comment",
