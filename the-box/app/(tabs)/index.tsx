@@ -232,63 +232,83 @@ export default function HomeScreen() {
     // real-time notifications (comments + status updates)
     setupRealtimeNotifications();
 
-    // real-time UI updates for ideas
-    const ideasChannel = supabase
-      .channel("ideas-updates")
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "ideas",
-        },
-        (payload) => {
-          const newIdea = payload.new as Idea;
-          setIdeas((prev) => [newIdea, ...prev]);
-        }
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "ideas",
-        },
-        (payload) => {
-          const updatedIdea = payload.new as Idea;
-          setIdeas((prev) =>
-            prev.map((idea) =>
-              idea.id === updatedIdea.id ? updatedIdea : idea
-            )
-          );
-          setFollowedIdeas((prev) =>
-            prev.map((idea) =>
-              idea.id === updatedIdea.id ? updatedIdea : idea
-            )
-          );
-        }
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "DELETE",
-          schema: "public",
-          table: "ideas",
-        },
-        (payload) => {
-          const deletedId = payload.old.id;
-          setIdeas((prev) => prev.filter((idea) => idea.id !== deletedId));
-          setFollowedIdeas((prev) =>
-            prev.filter((idea) => idea.id !== deletedId)
-          );
-        }
-      )
-      .subscribe();
+    // real-time UI updates for ideas (filter by company_id)
+    const setupIdeasChannel = async () => {
+      const userProfileString = await AsyncStorage.getItem("user");
+      if (!userProfileString) return null;
+
+      const userProfile = JSON.parse(userProfileString);
+      if (!userProfile?.company_id) return null;
+
+      const ideasChannel = supabase
+        .channel("ideas-updates")
+        .on(
+          "postgres_changes",
+          {
+            event: "INSERT",
+            schema: "public",
+            table: "ideas",
+            filter: `company_id=eq.${userProfile.company_id}`,
+          },
+          (payload) => {
+            const newIdea = payload.new as Idea;
+            setIdeas((prev) => [newIdea, ...prev]);
+          }
+        )
+        .on(
+          "postgres_changes",
+          {
+            event: "UPDATE",
+            schema: "public",
+            table: "ideas",
+            filter: `company_id=eq.${userProfile.company_id}`,
+          },
+          (payload) => {
+            const updatedIdea = payload.new as Idea;
+            setIdeas((prev) =>
+              prev.map((idea) =>
+                idea.id === updatedIdea.id ? updatedIdea : idea
+              )
+            );
+            setFollowedIdeas((prev) =>
+              prev.map((idea) =>
+                idea.id === updatedIdea.id ? updatedIdea : idea
+              )
+            );
+          }
+        )
+        .on(
+          "postgres_changes",
+          {
+            event: "DELETE",
+            schema: "public",
+            table: "ideas",
+            filter: `company_id=eq.${userProfile.company_id}`,
+          },
+          (payload) => {
+            const deletedId = payload.old.id;
+            setIdeas((prev) => prev.filter((idea) => idea.id !== deletedId));
+            setFollowedIdeas((prev) =>
+              prev.filter((idea) => idea.id !== deletedId)
+            );
+          }
+        )
+        .subscribe();
+
+      return ideasChannel;
+    };
+
+    let ideasChannel: any = null;
+    setupIdeasChannel().then((channel) => {
+      ideasChannel = channel;
+    });
 
     // cleanup on unmount
     return () => {
       cleanupRealtimeNotifications();
-      supabase.removeChannel(ideasChannel);
+      if (ideasChannel) {
+        supabase.removeChannel(ideasChannel);
+      }
     };
   }, [load, userFollowedIdeas]);
 
