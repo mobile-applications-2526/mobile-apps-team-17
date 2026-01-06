@@ -19,7 +19,6 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import AddIcon from "../../assets/images/add-icon.png";
 import ReturnIcon from "../../assets/images/return-icon.png";
-import { notifyNewComment } from "@/utils/notificationService";
 
 export default function DiscussionScreen() {
   const { id } = useLocalSearchParams();
@@ -44,12 +43,12 @@ export default function DiscussionScreen() {
         if (isAnonymousMode === "true") {
           setIsAnonymous(true);
         } else {
-          setIsAnonymous(false); 
+          setIsAnonymous(false);
         }
       } catch (error) {
         console.error("Failed to check anonymous mode:", error);
       }
-    }
+    };
     checkAnonymousMode();
 
     const loadUser = async () => {
@@ -238,9 +237,6 @@ export default function DiscussionScreen() {
       setCommentText("");
       setShowCommentInput(false);
       Keyboard.dismiss();
-
-      // Send notification to followers
-      await notifyNewComment(id as string);
     } catch (err) {
       console.error("Unexpected error adding comment:", err);
       alert("An unexpected error occurred. Please try again.");
@@ -273,12 +269,10 @@ export default function DiscussionScreen() {
             return;
           }
 
-          const { error } = await supabase
-            .from("users_followed_ideas")
-            .insert({
-              user_id: userProfile?.id,
-              idea_id: ideaId,
-            });
+          const { error } = await supabase.from("users_followed_ideas").insert({
+            user_id: userProfile?.id,
+            idea_id: ideaId,
+          });
 
           if (error) {
             console.error("Error following idea:", error);

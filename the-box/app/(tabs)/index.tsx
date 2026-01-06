@@ -3,6 +3,12 @@ import IdeaCard from "@/components/IdeaCard";
 import Splash from "@/components/Splash";
 import { supabase } from "@/supabase";
 import { Idea } from "@/types/index";
+import {
+  checkReviewDatesOnAppOpen,
+  cleanupRealtimeNotifications,
+  setupRealtimeNotifications,
+  trackStatusChange,
+} from "@/utils/notificationService";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -24,7 +30,6 @@ import BackIcon from "../../assets/images/back-icon.png";
 import FunnelIconActive from "../../assets/images/funnel-simple-2.png";
 import FunnelIcon from "../../assets/images/funnel-simple.png";
 import Search from "../../assets/images/search-icon.png";
-import { checkAndScheduleNotifications, notifyStatusUpdate, checkReviewDatesOnAppOpen } from "@/utils/notificationService";
 
 export default function HomeScreen() {
   const [ideas, setIdeas] = useState<Idea[]>([]);
@@ -58,7 +63,7 @@ export default function HomeScreen() {
 
   const [timeFilter, setTimeFilter] = useState<TimeFilter>("all");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
-  
+
   const userFollowedIdeas = useCallback(async () => {
     const userProfileString = await AsyncStorage.getItem("user");
 
@@ -198,7 +203,7 @@ export default function HomeScreen() {
         return;
       }
 
-      setIsManager((userProfile as any).role === 'manager');
+      setIsManager((userProfile as any).role === "manager");
 
       const { data, error } = await supabase
         .from("ideas")
@@ -223,6 +228,13 @@ export default function HomeScreen() {
   useEffect(() => {
     load();
     userFollowedIdeas();
+
+    // real-time notifications (comments + status updates)
+    setupRealtimeNotifications();
+    // cleanup on unmount
+    return () => {
+      cleanupRealtimeNotifications();
+    };
   }, [load, userFollowedIdeas]);
 
   // Refresh followed ideas when screen comes into focus (returning from discussion)
@@ -337,6 +349,9 @@ export default function HomeScreen() {
   );
 
   const updateIdeaStatus = async (ideaId: string, newStatus: string) => {
+    // to prevent self-notification
+    trackStatusChange(ideaId);
+
     const { error } = await supabase
       .from("ideas")
       .update({ status: newStatus })
@@ -357,9 +372,6 @@ export default function HomeScreen() {
         idea.id === ideaId ? { ...idea, status: newStatus } : idea
       )
     );
-    
-    // Send notification to followers
-    await notifyStatusUpdate(ideaId, newStatus);
   };
 
   const filteredIdeas = useMemo(
@@ -572,7 +584,9 @@ export default function HomeScreen() {
                 onFollow={(isCurrentlyFollowing) =>
                   handleFollow(item.id, isCurrentlyFollowing)
                 }
-                onChangeStatus={(newStatus) => updateIdeaStatus(item.id, newStatus)}
+                onChangeStatus={(newStatus) =>
+                  updateIdeaStatus(item.id, newStatus)
+                }
               />
             )}
             ListEmptyComponent={
@@ -614,7 +628,9 @@ export default function HomeScreen() {
                 onFollow={(isCurrentlyFollowing) =>
                   handleFollow(item.id, isCurrentlyFollowing)
                 }
-                onChangeStatus={(newStatus) => updateIdeaStatus(item.id, newStatus)}
+                onChangeStatus={(newStatus) =>
+                  updateIdeaStatus(item.id, newStatus)
+                }
               />
             )}
             ListEmptyComponent={

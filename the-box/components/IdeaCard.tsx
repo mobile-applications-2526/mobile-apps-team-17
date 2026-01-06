@@ -41,7 +41,6 @@ const IdeaCard: React.FC<Props> = ({
   const [currentStatus, setCurrentStatus] = useState(idea.status);
   const [pendingStatus, setPendingStatus] = useState<string | null>(null);
 
-
   useEffect(() => {
     setIsFollowing(initialIsFollowing);
   }, [initialIsFollowing]);
@@ -76,17 +75,23 @@ const IdeaCard: React.FC<Props> = ({
     return `${diffDays} days ago`;
   };
 
-  const formatReviewDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const day = `${date.getDate()}`.padStart(2, "0");
-    const month = `${date.getMonth() + 1}`.padStart(2, "0");
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
+  const getLastFridayOfMonth = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = today.getMonth();
+    const lastDay = new Date(year, month + 1, 0);
+
+    while (lastDay.getDay() !== 5) {
+      lastDay.setDate(lastDay.getDate() - 1);
+    }
+
+    const day = `${lastDay.getDate()}`.padStart(2, "0");
+    const monthNum = `${lastDay.getMonth() + 1}`.padStart(2, "0");
+    const yearNum = lastDay.getFullYear();
+    return `${day}/${monthNum}/${yearNum}`;
   };
 
-  const reviewDate = formatReviewDate(
-    (idea as any).review_date ?? idea.created_at
-  );
+  const reviewDate = getLastFridayOfMonth();
 
   useEffect(() => {
     setCurrentStatus(idea.status);
@@ -122,7 +127,7 @@ const IdeaCard: React.FC<Props> = ({
         setCurrentStatus(previousStatus);
       }
     }
-    
+
     setPendingStatus(null);
   };
 
@@ -144,114 +149,114 @@ const IdeaCard: React.FC<Props> = ({
       label: capitalizeStatus(status),
       value: status,
     }));
-  
+
   return (
     <View className="mb-1.5">
-    <View className="flex-column gap-0.5 mx-4">
-      <View className="bg-white rounded-[10px] border border-brand-black p-3 mb-1">
-        <Text className="text-gray-500 text-xs mb-1">
-          {formatDate(idea.created_at)}
-        </Text>
-
-        {idea.subject && (
-          <Text
-            className="text-brand-black text-lg font-semibold mb-1"
-            testID="idea-card-subject"
-          >
-            {idea.subject}
+      <View className="flex-column gap-0.5 mx-4">
+        <View className="bg-white rounded-[10px] border border-brand-black p-3 mb-1">
+          <Text className="text-gray-500 text-xs mb-1">
+            {formatDate(idea.created_at)}
           </Text>
-        )}
 
-        <Text
-          className="text-brand-black text-lg leading-5 mb-1"
-          testID="idea-card-description"
-        >
-          {idea.description}
-        </Text>
-      </View>
+          {idea.subject && (
+            <Text
+              className="text-brand-black text-lg font-semibold mb-1"
+              testID="idea-card-subject"
+            >
+              {idea.subject}
+            </Text>
+          )}
 
-      <View className="flex-row items-center gap-1.5">
-       <View className="relative w-3/5">
-          {isManager ? (
-            <Dropdown
-              disabled={!isManager}
-              options={statusOptions}
-              onSelect={openStatusModal}
-              iconSource={DropdownIcon}
-              triggerContent={
-                <Text className="text-brand-blue text-sm font-semibold text-center">
-                  {currentStatusLabel}
-                </Text>
-              }
-            />
-          ) : (
-            <View className="bg-white border-[1px] border-brand-black rounded-[10px] px-4 py-2">
-              <View className="flex-row items-center">
-                <View className="flex-1 items-center">
+          <Text
+            className="text-brand-black text-lg leading-5 mb-1"
+            testID="idea-card-description"
+          >
+            {idea.description}
+          </Text>
+        </View>
+
+        <View className="flex-row items-center gap-1.5">
+          <View className="relative w-3/5">
+            {isManager ? (
+              <Dropdown
+                disabled={!isManager}
+                options={statusOptions}
+                onSelect={openStatusModal}
+                iconSource={DropdownIcon}
+                triggerContent={
                   <Text className="text-brand-blue text-sm font-semibold text-center">
                     {currentStatusLabel}
                   </Text>
+                }
+              />
+            ) : (
+              <View className="bg-white border-[1px] border-brand-black rounded-[10px] px-4 py-2">
+                <View className="flex-row items-center">
+                  <View className="flex-1 items-center">
+                    <Text className="text-brand-blue text-sm font-semibold text-center">
+                      {currentStatusLabel}
+                    </Text>
+                  </View>
                 </View>
               </View>
-            </View>
-          )}
-        </View>
-
-        <View className="flex-1 flex-row gap-1.5">
-          <View
-            className={`flex-1 border rounded-[10px] ${
-              isCommentActive
-                ? "border-brand-blue bg-brand-blue"
-                : "border-brand-black bg-white"
-            }`}
-          >
-            <TouchableOpacity
-              className="flex-row items-center justify-center gap-1.5 px-2 py-2"
-              onPress={onComment}
-              activeOpacity={0.7}
-              testID="idea-card-comment-button"
-            >
-              <Image
-                source={isCommentActive ? CommentActiveIcon : CommentIcon}
-                style={{ width: 20, height: 20 }}
-              />
-            </TouchableOpacity>
+            )}
           </View>
 
-          <View
-            className={`flex-1 border rounded-[10px] ${
-              isFollowLoading
-                ? "border-brand-black bg-white"
-                : isFollowing
-                ? "border-brand-blue bg-brand-blue"
-                : "border-brand-black bg-white"
-            }`}
-          >
-            <TouchableOpacity
-              className="flex-row items-center justify-center px-2 py-2"
-              onPress={handleFollowPress}
-              activeOpacity={0.7}
-              disabled={isFollowLoading}
-              testID="idea-card-follow-button"
+          <View className="flex-1 flex-row gap-1.5">
+            <View
+              className={`flex-1 border rounded-[10px] ${
+                isCommentActive
+                  ? "border-brand-blue bg-brand-blue"
+                  : "border-brand-black bg-white"
+              }`}
             >
-              {isFollowLoading ? (
-                <ActivityIndicator
-                  size="small"
-                  color="#1877F2"
-                  testID="idea-card-follow-loading"
-                />
-              ) : (
+              <TouchableOpacity
+                className="flex-row items-center justify-center gap-1.5 px-2 py-2"
+                onPress={onComment}
+                activeOpacity={0.7}
+                testID="idea-card-comment-button"
+              >
                 <Image
-                  source={isFollowing ? BellActiveIcon : BellIcon}
+                  source={isCommentActive ? CommentActiveIcon : CommentIcon}
                   style={{ width: 20, height: 20 }}
                 />
-              )}
-            </TouchableOpacity>
+              </TouchableOpacity>
+            </View>
+
+            <View
+              className={`flex-1 border rounded-[10px] ${
+                isFollowLoading
+                  ? "border-brand-black bg-white"
+                  : isFollowing
+                    ? "border-brand-blue bg-brand-blue"
+                    : "border-brand-black bg-white"
+              }`}
+            >
+              <TouchableOpacity
+                className="flex-row items-center justify-center px-2 py-2"
+                onPress={handleFollowPress}
+                activeOpacity={0.7}
+                disabled={isFollowLoading}
+                testID="idea-card-follow-button"
+              >
+                {isFollowLoading ? (
+                  <ActivityIndicator
+                    size="small"
+                    color="#1877F2"
+                    testID="idea-card-follow-loading"
+                  />
+                ) : (
+                  <Image
+                    source={isFollowing ? BellActiveIcon : BellIcon}
+                    style={{ width: 20, height: 20 }}
+                  />
+                )}
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </View>
-    </View>
-    
+
       <Modal
         visible={isStatusModalVisible}
         transparent
@@ -271,7 +276,11 @@ const IdeaCard: React.FC<Props> = ({
             <View className="items-center mb-2">
               <Image
                 source={DropdownIcon}
-                style={{ width: 28, height: 28, transform: [{ rotate: "-90deg" }] }}
+                style={{
+                  width: 28,
+                  height: 28,
+                  transform: [{ rotate: "-90deg" }],
+                }}
                 resizeMode="contain"
               />
             </View>
