@@ -1,6 +1,6 @@
-import * as Notifications from "expo-notifications";
 import { supabase } from "@/supabase";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
 
 // Configure how notifications are handled when app is in foreground
@@ -102,7 +102,8 @@ async function checkReviewDateNotifications(userId: string) {
       );
       if (!dateMatch) continue;
 
-      const reviewDate = new Date(dateMatch[1]);
+      const [year, month, day] = dateMatch[1].split("-").map(Number);
+      const reviewDate = new Date(year, month - 1, day);
       reviewDate.setHours(0, 0, 0, 0);
 
       const diffTime = reviewDate.getTime() - today.getTime();
@@ -259,76 +260,117 @@ export async function checkReviewDatesOnAppOpen() {
   }
 }
 
-export async function notifyNewComment(ideaId: string) {
-  try {
-    const userString = await AsyncStorage.getItem("user");
-    if (!userString) return;
+// realtime subscriptions
+let realtimeChannel: any = null;
+let recentStatusChanges = new Set<string>();
 
-    const currentUser = JSON.parse(userString);
-
-    // Get all users following this idea (except the commenter)
-    const { data: followers, error } = await supabase
-      .from("users_followed_ideas")
-      .select("user_id")
-      .eq("idea_id", ideaId)
-      .neq("user_id", currentUser.id);
-
-    if (error) {
-      console.error("Error fetching followers:", error);
-      return;
-    }
-
-    if (!followers || followers.length === 0) {
-      return; // No one is following this idea
-    }
-
-    // Send notification immediately to current user (local notification)
-    await Notifications.scheduleNotificationAsync({
-      content: {
-        title: "New Comment",
-        body: "Someone commented on an idea you follow",
-        data: { ideaId, type: "new_comment" },
-      },
-      trigger: null, // Send immediately
-    });
-
-    console.log(`New comment notification sent for idea ${ideaId}`);
-  } catch (error) {
-    console.error("Error sending new comment notification:", error);
-  }
+// to prevent self-notification
+export function trackStatusChange(ideaId: string) {
+  recentStatusChanges.add(ideaId);
+  // remove after 2 seconds
+  setTimeout(() => {
+    recentStatusChanges.delete(ideaId);
+  }, 2000);
 }
 
-export async function notifyStatusUpdate(ideaId: string, newStatus: string) {
+export async function setupRealtimeNotifications() {
   try {
     const userString = await AsyncStorage.getItem("user");
     if (!userString) return;
 
     const user = JSON.parse(userString);
 
-    // Check if the current user is following this idea
-    const { data: isFollowing, error } = await supabase
-      .from("users_followed_ideas")
-      .select("id")
-      .eq("user_id", user.id)
-      .eq("idea_id", ideaId)
-      .single();
-
-    if (error || !isFollowing) {
-      return; // User is not following this idea
+    if (realtimeChannel) {
+      await supabase.removeChannel(realtimeChannel);
     }
 
-    // Schedule notification for status update
-    await Notifications.scheduleNotificationAsync({
-      content: {
-        title: "Status Update",
-        body: `An idea you follow has been ${newStatus}`,
-        data: { ideaId, type: "status_update" },
-      },
-      trigger: null, // Send immediately
-    });
+    realtimeChannel = supabase
+      .channel("app-notifications")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "comments",
+        },
+        async (payload) => {
+          const newComment = payload.new as any;
 
-    console.log("Status update notification sent");
+          // don't notify if user made the comment themselves
+          const isOwnComment =
+            newComment.created_by && newComment.created_by === user.id;
+          if (isOwnComment) return;
+
+          // check if user is following this idea
+          const { data: isFollowing } = await supabase
+            .from("users_followed_ideas")
+            .select("id")
+            .eq("idea_id", newComment.idea_id)
+            .eq("user_id", user.id)
+            .single();
+
+          // only notify if following
+          if (isFollowing) {
+            await Notifications.scheduleNotificationAsync({
+              content: {
+                title: "New Comment",
+                body: "Someone commented on an idea you follow",
+                data: { ideaId: newComment.idea_id, type: "new_comment" },
+              },
+              trigger: null,
+            });
+          }
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "ideas",
+        },
+        async (payload) => {
+          const oldIdea = payload.old as any;
+          const newIdea = payload.new as any;
+
+          if (oldIdea.status === newIdea.status) return;
+
+          const { data: isFollowing } = await supabase
+            .from("users_followed_ideas")
+            .select("id")
+            .eq("idea_id", newIdea.id)
+            .eq("user_id", user.id)
+            .single();
+
+          if (!isFollowing) return;
+          if (newIdea.created_by === user.id) return;
+          if (recentStatusChanges.has(newIdea.id)) return;
+          const notifiableStatuses = [
+            "commented by manager",
+            "accepted",
+            "declined",
+          ];
+          if (notifiableStatuses.includes(newIdea.status)) {
+            await Notifications.scheduleNotificationAsync({
+              content: {
+                title: "Status Update",
+                body: `An idea you follow has been ${newIdea.status}`,
+                data: { ideaId: newIdea.id, type: "status_update" },
+              },
+              trigger: null,
+            });
+          }
+        }
+      )
+      .subscribe();
   } catch (error) {
-    console.error("Error sending status update notification:", error);
+    console.error("Error setting up realtime notifications:", error);
+  }
+}
+
+export async function cleanupRealtimeNotifications() {
+  if (realtimeChannel) {
+    await supabase.removeChannel(realtimeChannel);
+    realtimeChannel = null;
   }
 }
