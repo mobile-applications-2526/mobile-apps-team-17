@@ -43,7 +43,10 @@ app-example
 
 # generated native folders
 /ios
+/ios/Pods
 /android
+/android/.gradle
+/android/app/build
 
 # local supabase
 /supabase
