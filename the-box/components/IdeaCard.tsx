@@ -21,6 +21,7 @@ type Props = {
   isCommentActive?: boolean;
   isManager?: boolean;
   isFollowLoading?: boolean;
+  onPress?: () => void;
   onComment?: () => void;
   onFollow?: (isCurrentlyFollowing: boolean) => Promise<void>;
   onChangeStatus?: (newStatus: string) => Promise<void>;
@@ -32,6 +33,7 @@ const IdeaCard: React.FC<Props> = ({
   isCommentActive = false,
   isManager = false,
   isFollowLoading = false,
+  onPress,
   onComment,
   onFollow,
   onChangeStatus,
@@ -153,7 +155,12 @@ const IdeaCard: React.FC<Props> = ({
   return (
     <View className="mb-1.5">
       <View className="flex-column gap-0.5 mx-4">
-        <View className="bg-white rounded-[10px] border border-brand-black p-3 mb-1">
+        <TouchableOpacity
+          className="bg-white rounded-[10px] border border-brand-black p-3 mb-1"
+          onPress={onPress}
+          activeOpacity={0.7}
+          testID="idea-card-pressable"
+        >
           <Text className="text-gray-500 text-xs mb-1">
             {formatDate(idea.created_at)}
           </Text>
@@ -173,7 +180,7 @@ const IdeaCard: React.FC<Props> = ({
           >
             {idea.description}
           </Text>
-        </View>
+        </TouchableOpacity>
 
         <View className="flex-row items-center gap-1.5">
           <View className="relative w-3/5">

@@ -388,9 +388,6 @@ export default function DiscussionScreen() {
               initialIsFollowing={isFollowing}
               isCommentActive={true}
               isFollowLoading={followStatusLoading}
-              onComment={() => {
-                return;
-              }}
               onFollow={(isCurrentlyFollowing) =>
                 handleFollow(idea.id, isCurrentlyFollowing)
               }

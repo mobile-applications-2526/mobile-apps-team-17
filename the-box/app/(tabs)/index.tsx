@@ -649,6 +649,12 @@ export default function HomeScreen() {
               <IdeaCard
                 idea={item}
                 isManager={isManager}
+                onPress={() => {
+                  router.push({
+                    pathname: "/discussion/[id]",
+                    params: { id: item.id },
+                  });
+                }}
                 onComment={() => {
                   router.push({
                     pathname: "/discussion/[id]",
@@ -693,6 +699,12 @@ export default function HomeScreen() {
               <IdeaCard
                 idea={item}
                 isManager={isManager}
+                onPress={() => {
+                  router.push({
+                    pathname: "/discussion/[id]",
+                    params: { id: item.id },
+                  });
+                }}
                 onComment={() => {
                   router.push({
                     pathname: "/discussion/[id]",
