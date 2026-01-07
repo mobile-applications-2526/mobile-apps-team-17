@@ -5,6 +5,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import {
+  Alert,
   Image,
   Keyboard,
   KeyboardAvoidingView,
@@ -20,6 +21,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import AddIcon from "../../assets/images/add-icon.png";
 import ReturnIcon from "../../assets/images/return-icon.png";
 import { trackStatusChange } from "@/utils/notificationService";
+import { Filter } from "bad-words";
 
 export default function DiscussionScreen() {
   const { id } = useLocalSearchParams();
@@ -36,6 +38,7 @@ export default function DiscussionScreen() {
   const [isFollowing, setIsFollowing] = useState(false);
   const [followStatusLoading, setFollowStatusLoading] = useState(true);
   const [isAnonymous, setIsAnonymous] = useState(false);
+  const profanityFilter = new Filter();
 
   useEffect(() => {
     const checkAnonymousMode = async () => {
@@ -246,6 +249,11 @@ export default function DiscussionScreen() {
 
   const handleAddComment = async () => {
     if (!commentText.trim()) return;
+
+    if (profanityFilter.isProfane(commentText)) {
+      Alert.alert("Profanity languages are strictly prohibited");
+      return;
+    }
 
     try {
       let isManager = true;
