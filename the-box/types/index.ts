@@ -9,6 +9,7 @@ export type Idea = {
   created_by?: string;
   avatar_seed?: string;
   comment_count?: number;
+  followers_count?: number;
   department: string;
 };
 

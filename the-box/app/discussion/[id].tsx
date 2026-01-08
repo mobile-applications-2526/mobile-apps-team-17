@@ -107,14 +107,18 @@ export default function DiscussionScreen() {
     try {
       const { data, error } = await supabase
         .from("ideas")
-        .select("*")
+        .select("*, users_followed_ideas(count)")
         .eq("id", id)
         .single();
 
       if (error) {
         setError(error.message);
       } else {
-        setIdea(data);
+        const ideaWithCount = {
+          ...data,
+          followers_count: data.users_followed_ideas?.[0]?.count ?? 0,
+        };
+        setIdea(ideaWithCount);
       }
 
       const { data: commentsData, error: commentsError } = await supabase
@@ -357,6 +361,14 @@ export default function DiscussionScreen() {
             return;
           }
           setIsFollowing(true);
+          setIdea((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  followers_count: (prev.followers_count || 0) + 1,
+                }
+              : null
+          );
         } else {
           const { error } = await supabase
             .from("users_followed_ideas")
@@ -370,6 +382,14 @@ export default function DiscussionScreen() {
             return;
           }
           setIsFollowing(false);
+          setIdea((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  followers_count: Math.max(0, (prev.followers_count || 0) - 1),
+                }
+              : null
+          );
         }
 
         return Promise.resolve();

@@ -8,12 +8,12 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import Dropdown from "./Dropdown";
 import DropdownIcon from "../assets/images/back-icon.png";
 import BellActiveIcon from "../assets/images/bell-active-icon.png";
 import BellIcon from "../assets/images/bell-icon.png";
 import CommentActiveIcon from "../assets/images/comment-active-icon.png";
 import CommentIcon from "../assets/images/comment-icon.png";
+import Dropdown from "./Dropdown";
 
 type Props = {
   idea: Idea;
@@ -42,21 +42,32 @@ const IdeaCard: React.FC<Props> = ({
   const [isStatusModalVisible, setIsStatusModalVisible] = useState(false);
   const [currentStatus, setCurrentStatus] = useState(idea.status);
   const [pendingStatus, setPendingStatus] = useState<string | null>(null);
+  const [followersCount, setFollowersCount] = useState(
+    idea.followers_count || 0
+  );
 
   useEffect(() => {
     setIsFollowing(initialIsFollowing);
   }, [initialIsFollowing]);
 
+  useEffect(() => {
+    setFollowersCount(idea.followers_count || 0);
+  }, [idea.followers_count]);
+
   const handleFollowPress = async () => {
     if (onFollow) {
       const newState = !isFollowing;
       setIsFollowing(newState);
+      setFollowersCount((prev) => (newState ? prev + 1 : Math.max(0, prev - 1)));
 
       try {
         await onFollow(isFollowing);
       } catch (error) {
         console.error("Failed to update follow status:", error);
         setIsFollowing(!newState);
+        setFollowersCount((prev) =>
+          newState ? Math.max(0, prev - 1) : prev + 1
+        );
       }
     }
   };
@@ -240,7 +251,7 @@ const IdeaCard: React.FC<Props> = ({
               }`}
             >
               <TouchableOpacity
-                className="flex-row items-center justify-center px-2 py-2"
+                className="flex-row items-center justify-center px-2 py-2 gap-2"
                 onPress={handleFollowPress}
                 activeOpacity={0.7}
                 disabled={isFollowLoading}
@@ -253,10 +264,19 @@ const IdeaCard: React.FC<Props> = ({
                     testID="idea-card-follow-loading"
                   />
                 ) : (
-                  <Image
-                    source={isFollowing ? BellActiveIcon : BellIcon}
-                    style={{ width: 20, height: 20 }}
-                  />
+                  <>
+                    <Image
+                      source={isFollowing ? BellActiveIcon : BellIcon}
+                      style={{ width: 20, height: 20 }}
+                    />
+                    <Text
+                      className={`text-sm font-medium ${
+                        isFollowing ? "text-white" : "text-brand-black"
+                      }`}
+                    >
+                      {followersCount}
+                    </Text>
+                  </>
                 )}
               </TouchableOpacity>
             </View>

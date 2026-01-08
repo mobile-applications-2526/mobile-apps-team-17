@@ -77,13 +77,16 @@ export default function HomeScreen() {
       }
       const { data, error } = await supabase
         .from("users_followed_ideas")
-        .select("idea:idea_id(*)")
+        .select("idea:idea_id(*, users_followed_ideas(count))")
         .eq("user_id", userProfile?.id);
       if (error) {
         setError(error.message);
       } else {
         const followedIdeasRaw =
-          data?.map((item: any) => item.idea).flat() ?? [];
+          data?.map((item: any) => ({
+            ...item.idea,
+            followers_count: item.idea?.users_followed_ideas?.[0]?.count ?? 0,
+          })) ?? [];
         const uniqueFollowedIdeas = followedIdeasRaw.filter(
           (idea: Idea, index: number, self: Idea[]) =>
             index === self.findIndex((i) => i.id === idea.id)
@@ -134,6 +137,15 @@ export default function HomeScreen() {
             setError(error.message);
             return;
           }
+
+          setIdeas((prev) =>
+            prev.map((idea) =>
+              idea.id === ideaId
+                ? { ...idea, followers_count: (idea.followers_count || 0) + 1 }
+                : idea
+            )
+          );
+
           userFollowedIdeas();
         } else {
           setUnfollowingIds((prev) => new Set(prev).add(String(ideaId)));
@@ -154,6 +166,20 @@ export default function HomeScreen() {
             });
             return;
           }
+
+          setIdeas((prev) =>
+            prev.map((idea) =>
+              idea.id === ideaId
+                ? {
+                    ...idea,
+                    followers_count: Math.max(
+                      0,
+                      (idea.followers_count || 0) - 1
+                    ),
+                  }
+                : idea
+            )
+          );
 
           setFollowedIdeas((prev) => prev.filter((idea) => idea.id !== ideaId));
 
@@ -208,7 +234,7 @@ export default function HomeScreen() {
       const { data, error } = await supabase
         .from("ideas")
         .select(
-          "id, subject, department, description, status, created_at, company_id"
+          "id, subject, department, description, status, created_at, company_id, users_followed_ideas(count)"
         )
         .eq("company_id", userProfile.company_id)
         .order("created_at", { ascending: false });
@@ -216,7 +242,12 @@ export default function HomeScreen() {
       if (error) {
         setError(error.message);
       } else {
-        setIdeas(data ?? []);
+        const ideasWithDetails =
+          data?.map((item: any) => ({
+            ...item,
+            followers_count: item.users_followed_ideas?.[0]?.count ?? 0,
+          })) ?? [];
+        setIdeas(ideasWithDetails);
       }
     } catch (err: any) {
       setError(err.message ?? "Unknown error");
