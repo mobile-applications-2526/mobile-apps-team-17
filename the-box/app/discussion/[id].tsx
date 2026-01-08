@@ -1,7 +1,9 @@
 import IdeaCard from "@/components/IdeaCard";
 import { supabase } from "@/supabase";
 import { Comment, Idea } from "@/types/index";
+import { trackStatusChange } from "@/utils/notificationService";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Filter } from "bad-words";
 import { useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import {
@@ -20,8 +22,6 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import AddIcon from "../../assets/images/add-icon.png";
 import ReturnIcon from "../../assets/images/return-icon.png";
-import { trackStatusChange } from "@/utils/notificationService";
-import { Filter } from "bad-words";
 
 export default function DiscussionScreen() {
   const { id } = useLocalSearchParams();
@@ -256,10 +256,7 @@ export default function DiscussionScreen() {
     }
 
     try {
-      let isManager = true;
-      if (isAnonymous) {
-        isManager = false;
-      }
+      const isManager = currentUser?.role === "manager" && !isAnonymous;
 
       const insertData: any = {
         idea_id: id,
