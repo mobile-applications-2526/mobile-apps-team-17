@@ -1,0 +1,42 @@
+[
+  {
+    "id": "comment-1",
+    "idea_id": "idea-3",
+    "content": "Great suggestion! We'll consider this for Q1 2026.",
+    "commenter_role": "manager",
+    "created_at": "2025-12-26T10:00:00Z",
+    "created_by": "manager-1",
+    "user_name": "John Manager",
+    "user_department": "Management"
+  },
+  {
+    "id": "comment-2",
+    "idea_id": "idea-3",
+    "content": "I agree! Team building is important for our culture.",
+    "commenter_role": "employee",
+    "created_at": "2025-12-27T11:30:00Z",
+    "created_by": "user-1",
+    "user_name": "Jane Doe",
+    "user_department": "Engineering"
+  },
+  {
+    "id": "comment-3",
+    "idea_id": "idea-4",
+    "content": "Unfortunately, we don't have the budget for parking changes this year.",
+    "commenter_role": "manager",
+    "created_at": "2025-12-21T09:00:00Z",
+    "created_by": "manager-1",
+    "user_name": "John Manager",
+    "user_department": "Management"
+  },
+  {
+    "id": "comment-4",
+    "idea_id": "idea-2",
+    "content": "We've approved flexible working hours starting next month!",
+    "commenter_role": "manager",
+    "created_at": "2025-12-29T14:00:00Z",
+    "created_by": "manager-1",
+    "user_name": "John Manager",
+    "user_department": "Management"
+  }
+]

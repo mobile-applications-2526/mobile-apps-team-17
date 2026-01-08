@@ -3,7 +3,6 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -12,6 +11,8 @@ import {
   View,
 } from "react-native";
 import { supabase } from "../../supabase";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { isValidEmail, validatePassword } from "../../utils/validation";
 
 export default function ManagerRegisterScreen() {
   const router = useRouter();
@@ -20,48 +21,114 @@ export default function ManagerRegisterScreen() {
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-
-  const handlePasswordChange = (text: string) => {
-    setPassword(text);
-  };
+  const [companyName, setCompanyName] = useState("");
+  const [errors, setErrors] = useState({
+    email: "",
+    password: "",
+    fullName: "",
+    companyName: "",
+    general: "",
+  });
 
   const handlePasswordBlur = () => {
     setShowPassword(false);
   };
 
-  // TODO - we shouldn't show alert, instead custom message (component? modal?)
   const handleRegister = async () => {
-    if (!email || !password || !fullName) {
-      return Alert.alert("Error", "Please fill in all fields");
+    setErrors({
+      email: "",
+      password: "",
+      fullName: "",
+      companyName: "",
+      general: "",
+    });
+
+    const newErrors: any = {};
+    if (!email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!isValidEmail(email)) {
+      newErrors.email = "Please enter a valid email address";
     }
-    if (password.length < 8) {
-      return Alert.alert(
-        "Error",
-        "Password must be at least 8 characters, 1 uppercase, 1 lowercase, 1 number, and 1 special character."
-      );
+
+    if (!password) {
+      newErrors.password = "Password is required";
+    } else {
+      const passwordValidation = validatePassword(password);
+      if (!passwordValidation.isValid) {
+        newErrors.password = passwordValidation.error;
+      }
+    }
+
+    if (!fullName.trim()) newErrors.fullName = "Full name is required";
+    if (!companyName.trim()) newErrors.companyName = "Company name is required";
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
     }
 
     setLoading(true);
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email: email.trim().toLowerCase(),
-        password,
-        options: {
-          data: {
+      // Insert manager directly into users table
+      const now = new Date().toISOString();
+
+      const { data: companyRow, error: errCompany } = await supabase
+        .from("companies")
+        .select("*")
+        .eq("name", companyName)
+        .single();
+
+      if (errCompany || !companyRow) {
+        setErrors((prev) => ({
+          ...prev,
+          companyName: "Company not found",
+        }));
+        setLoading(false);
+        return;
+      }
+
+      const { data: inserted, error } = await supabase
+        .from("users")
+        .insert([
+          {
+            email: email.trim().toLowerCase(),
+            password,
             full_name: fullName,
             role: "manager",
+            company_id: companyRow.id,
+            created_at: now,
+            last_login: now,
+            is_active: true,
           },
-        },
-      });
-      if (error) throw error;
-      // TODO - we shouldn't show alert, instead custom message (component? modal?)
-      Alert.alert(
-        "Check your email",
-        "We sent you a confirmation link. After confirming, please log in.",
-        [{ text: "OK", onPress: () => router.replace("/(auth)/login") }]
-      );
+        ])
+        .select();
+
+      if (
+        error ||
+        !inserted ||
+        !Array.isArray(inserted) ||
+        inserted.length === 0
+      ) {
+        setErrors((prev) => ({
+          ...prev,
+          general: "Failed to create account. Please try again",
+        }));
+        setLoading(false);
+        return;
+      }
+
+      const manager = inserted[0];
+
+      // Persist created manager locally so app treats them as signed in
+      await AsyncStorage.setItem("user", JSON.stringify(manager));
+
+      // Navigate into app
+      router.replace("/(tabs)");
     } catch (e: any) {
-      Alert.alert("Registration Failed", e.message ?? "Unknown error");
+      setErrors((prev) => ({
+        ...prev,
+        general: e.message || "Registration failed. Please try again",
+      }));
     } finally {
       setLoading(false);
     }
@@ -77,6 +144,7 @@ export default function ManagerRegisterScreen() {
         contentContainerStyle={{ flexGrow: 1, justifyContent: "center" }}
         className="bg-white px-5"
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
         <View className="mb-20">
           <Text className="text-xl font-bold text-brand-black mb-3 font-sf-pro">
@@ -89,10 +157,22 @@ export default function ManagerRegisterScreen() {
             </Text>
           </View>
 
+          {errors.general && (
+            <View className="mb-3 px-1">
+              <Text className="text-red-500 text-sm font-sf-pro">
+                {errors.general}
+              </Text>
+            </View>
+          )}
+
           <Input
             placeholder="Email"
             value={email}
-            onChangeText={setEmail}
+            onChangeText={(text: string) => {
+              setEmail(text);
+              setErrors((prev) => ({ ...prev, email: "", general: "" }));
+            }}
+            error={errors.email}
             autoCapitalize="none"
             keyboardType="email-address"
             editable={!loading}
@@ -102,8 +182,12 @@ export default function ManagerRegisterScreen() {
             <Input
               placeholder="Password"
               value={password}
-              onChangeText={handlePasswordChange}
+              onChangeText={(text: string) => {
+                setPassword(text);
+                setErrors((prev) => ({ ...prev, password: "", general: "" }));
+              }}
               onBlur={handlePasswordBlur}
+              error={errors.password}
               secureTextEntry={!showPassword}
               editable={!loading}
               className="mb-0"
@@ -125,7 +209,23 @@ export default function ManagerRegisterScreen() {
           <Input
             placeholder="Full Name"
             value={fullName}
-            onChangeText={setFullName}
+            onChangeText={(text: string) => {
+              setFullName(text);
+              setErrors((prev) => ({ ...prev, fullName: "", general: "" }));
+            }}
+            error={errors.fullName}
+            editable={!loading}
+            autoCapitalize="words"
+          />
+
+          <Input
+            placeholder="Company Name"
+            value={companyName}
+            onChangeText={(text: string) => {
+              setCompanyName(text);
+              setErrors((prev) => ({ ...prev, companyName: "", general: "" }));
+            }}
+            error={errors.companyName}
             editable={!loading}
             autoCapitalize="words"
           />

@@ -1,6 +1,7 @@
 import { Stack, useRouter } from "expo-router";
 import { Image, TouchableOpacity } from "react-native";
 import CustomBackIcon from "../../assets/images/back-icon.png";
+import PageHeader from "@/components/PageHeader";
 
 const CustomLeftButton = () => {
   const router = useRouter();
@@ -12,7 +13,7 @@ const CustomLeftButton = () => {
     >
       <Image
         source={CustomBackIcon}
-        style={{ width: 40, height: 40, marginRight: 7 }}
+        style={{ width: 36, height: 36, marginRight: 7 }}
       />
     </TouchableOpacity>
   );
@@ -26,11 +27,6 @@ export default function AuthLayout() {
         headerStyle: {
           backgroundColor: "#ffffff",
         },
-        headerTitleStyle: {
-          fontSize: 48,
-          fontWeight: "bold",
-          color: "#1877F2",
-        },
         headerShadowVisible: false,
         headerTitleAlign: "left",
       }}
@@ -38,13 +34,13 @@ export default function AuthLayout() {
       <Stack.Screen
         name="login"
         options={{
-          headerTitle: "Welcome",
+          headerTitle: () => <PageHeader title="Welcome" />,
         }}
       />
       <Stack.Screen
         name="manager-register"
         options={{
-          headerTitle: "Signup",
+          headerTitle: () => <PageHeader title="Signup" />,
           headerLeft: () => <CustomLeftButton />,
           headerBackVisible: false,
         }}

@@ -11,3 +11,15 @@ export type Idea = {
   comment_count?: number;
   department: string;
 };
+
+export type Comment = {
+  id: string;
+  idea_id: string;
+  content: string;
+  commenter_role: string;
+  created_at: string;
+  updated_at: string;
+  created_by?: string;
+  user_name?: string;
+  user_department?: string;
+};
